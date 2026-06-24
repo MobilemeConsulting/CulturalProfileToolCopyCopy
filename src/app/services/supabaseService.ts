@@ -242,6 +242,7 @@ export interface MatchResult {
   profit_id: string;
   match_score: number;
   dimension_scores: unknown;
+  status?: string;
   created_at?: string;
 }
 

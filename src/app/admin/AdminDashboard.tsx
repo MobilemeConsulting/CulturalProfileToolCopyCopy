@@ -32,6 +32,15 @@ import {
   dataQuality,
 } from '../utils/adminStats';
 import { UsersSection } from './UsersSection';
+import { FileDown, Mail } from 'lucide-react';
+import { exportMatchReportToPdf } from '../utils/pdfExport';
+import { sendMatchReport, buildMatchReportHtml } from '../services/reportService';
+import {
+  updateMatchStatus,
+  MATCH_STATUSES,
+  MATCH_STATUS_LABELS,
+  MatchStatus,
+} from '../services/matchStatusService';
 
 const STORAGE_KEY = 'cultural-profiles';
 
@@ -308,6 +317,40 @@ function RankingSection({
 
   const profileName = (id: string) => profiles.find((p) => p.id === id)?.meta.orgName || id;
 
+  const handleMail = async (item: {
+    cultural: OrganisationProfile;
+    profit: OrganisationProfile;
+    overall: number;
+    dimensionMatches: { dimension: string | number; matchScore: number }[];
+  }) => {
+    const toEmail = window.prompt(
+      `Naar welk e-mailadres wil je het matchrapport sturen?\n${item.cultural.meta.orgName} ↔ ${item.profit.meta.orgName}`
+    );
+    if (!toEmail) return;
+    const html = buildMatchReportHtml({
+      culturalName: item.cultural.meta.orgName,
+      profitName: item.profit.meta.orgName,
+      overall: Math.round(item.overall),
+      dimensionMatches: item.dimensionMatches.map((d) => ({
+        dimension: String(d.dimension),
+        matchScore: d.matchScore,
+      })),
+    });
+    const { error } = await sendMatchReport({
+      toEmail,
+      subject: `Matchrapport: ${item.cultural.meta.orgName} ↔ ${item.profit.meta.orgName}`,
+      html,
+    });
+    if (error) window.alert('Mail mislukt: ' + error);
+    else window.alert('Matchrapport verstuurd naar ' + toEmail);
+  };
+
+  const handleStatus = async (res: MatchResult, status: MatchStatus) => {
+    if (!res.id) return;
+    await updateMatchStatus(res.id, status);
+    await onSaved();
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
@@ -392,6 +435,34 @@ function RankingSection({
                   {r.opp.meta.orgType} · {getMatchLabel(r.overall)}
                 </div>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() =>
+                    exportMatchReportToPdf({
+                      culturalName: r.cultural.meta.orgName,
+                      profitName: r.profit.meta.orgName,
+                      overall: r.overall,
+                      dimensionMatches: r.dimensionMatches.map((d) => ({
+                        dimension: String(d.dimension),
+                        culturalScore: d.culturalScore,
+                        profitScore: d.profitScore,
+                        matchScore: d.matchScore,
+                      })),
+                    })
+                  }
+                  title="Download matchrapport (PDF)"
+                  className="p-2 rounded-lg bg-white/70 hover:bg-white text-slate-700 border border-slate-200"
+                >
+                  <FileDown className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleMail(r)}
+                  title="Mail matchrapport"
+                  className="p-2 rounded-lg bg-white/70 hover:bg-white text-slate-700 border border-slate-200"
+                >
+                  <Mail className="w-4 h-4" />
+                </button>
+              </div>
               <div className={`text-3xl font-bold ${matchColor(r.overall)}`}>
                 {Math.round(r.overall)}%
               </div>
@@ -409,11 +480,22 @@ function RankingSection({
             {savedResults.map((res) => (
               <div
                 key={res.id}
-                className="flex items-center justify-between text-sm border-b border-slate-100 pb-2"
+                className="flex items-center justify-between text-sm border-b border-slate-100 pb-2 gap-3"
               >
-                <span className="text-slate-700">
+                <span className="text-slate-700 flex-1 truncate">
                   {profileName(res.cultural_id)} ↔ {profileName(res.profit_id)}
                 </span>
+                <select
+                  value={(res.status as MatchStatus) || 'nieuw'}
+                  onChange={(e) => handleStatus(res, e.target.value as MatchStatus)}
+                  className="text-xs border border-slate-300 rounded px-2 py-1"
+                >
+                  {MATCH_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {MATCH_STATUS_LABELS[s]}
+                    </option>
+                  ))}
+                </select>
                 <span className={`font-semibold ${matchColor(res.match_score)}`}>
                   {Math.round(res.match_score)}%
                 </span>

@@ -2,11 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
-import { FileEdit, Eye, Link2, BarChart3, Info, Sparkles, Upload, ExternalLink, TrendingUp, Users as UsersIcon } from 'lucide-react';
+import { FileEdit, Eye, Link2, BarChart3, Info, Sparkles, Upload, Download, ExternalLink, TrendingUp, Users as UsersIcon } from 'lucide-react';
 import { ExportButton } from './components/ExportButton';
 import { PasswordProtection } from './components/PasswordProtection';
 import { CSROIDashboard } from './components/CSROIDashboard';
-import { SupabaseConfig } from './components/SupabaseConfig';
 import { getAllDemoProfiles } from './data/demoProfiles';
 import { OrganisationProfile } from './data/types';
 import { migrateAllProfiles } from './utils/migrateProfiles';
@@ -14,9 +13,10 @@ import {
   isConfigured,
   getAllProfiles,
   saveProfile,
-  deleteProfile,
+  deleteProfile as deleteProfileRemote,
   syncProfiles
 } from './services/supabaseService';
+import { exportProfileToPdf } from './utils/pdfExport';
 import { ProfileOutput } from './components/ProfileOutput';
 import { MatchingView } from './components/MatchingView';
 import { ProfileCreationWizard } from './components/ProfileCreationWizard';
@@ -175,10 +175,20 @@ export default function App() {
   };
 
   const deleteProfile = (id: string) => {
-    setProfiles((prev) => prev.filter((p) => p.id !== id));
+    setProfiles((prev) => {
+      const updated = prev.filter((p) => p.id !== id);
+      // Expliciet wegschrijven: de save-effect slaat alleen op bij length > 0,
+      // dus bij het verwijderen van het laatste profiel moet dit hier gebeuren.
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
     if (currentProfile?.id === id) {
       setCurrentProfile(null);
       setActiveTab('select');
+    }
+    // Ook uit Supabase verwijderen (best-effort; faalt stil bij geen config).
+    if (isConfigured()) {
+      deleteProfileRemote(id).catch(() => {});
     }
     toast.success('Profiel verwijderd');
   };
@@ -287,6 +297,14 @@ export default function App() {
               <span className="font-medium">Profiel Importeren</span>
             </button>
             <ExportButton profile={currentProfile} />
+            <button
+              onClick={() => currentProfile && exportProfileToPdf(currentProfile)}
+              disabled={!currentProfile}
+              className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Download className="w-5 h-5" />
+              <span className="font-medium">PDF Export</span>
+            </button>
           </div>
         </div>
         
@@ -329,9 +347,6 @@ export default function App() {
                     + Nieuw Profiel Aanmaken
                   </button>
                 </div>
-                
-                {/* Supabase Configuration */}
-                <SupabaseConfig profiles={profiles} />
                 
                 <SavedProfilesManager
                   profiles={profiles}
