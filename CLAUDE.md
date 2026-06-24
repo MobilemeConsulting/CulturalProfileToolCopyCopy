@@ -84,6 +84,17 @@ Brevo-SMTP instellen in Supabase → Authentication → SMTP Settings (voor invi
 - [vercel.json](vercel.json) bevat SPA-rewrite (nodig voor `/admin`-routes, anders 404).
 - Zet in Vercel → Environment Variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Vite bakt ze in tijdens build → **redeploy** na wijziging).
 
+### ⚠️ Vercel Hobby — committer-identiteit (belangrijke valkuil)
+Op het **Hobby-plan** blokkeert Vercel elke deploy waarvan de git-**committer-e-mail niet aan de GitHub-accounteigenaar gekoppeld is** ("GitHub could not associate the committer with a GitHub user" / "Hobby teams do not support collaboration"). Dit gaat NIET over meerdere mensen — het is puur e-mail-matching.
+- **Commit altijd met de GitHub-e-mail van de eigenaar.** De repo-config staat hierop ingesteld:
+  ```
+  git config user.name  "MobilemeConsulting"
+  git config user.email "266076820+MobilemeConsulting@users.noreply.github.com"
+  ```
+- Default machine-e-mails (bv. `gebruiker@computernaam.local`) worden geblokkeerd.
+- Geblokkeerde commits oplossen: hercommit/amend met de juiste identiteit en (force-)push.
+- `SupabaseConfig.tsx` bestaat nog maar wordt **niet meer gebruikt** op de publieke startpagina (config gebeurt via env-vars).
+
 ## Env (.env, gitignored)
 ```
 VITE_SUPABASE_URL=...
