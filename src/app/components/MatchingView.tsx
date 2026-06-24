@@ -16,6 +16,7 @@ import type { Profile } from '../App';
 import { Building2, TrendingUp, Sparkles, AlertCircle, CheckCircle2, Heart, Info, Users } from 'lucide-react';
 import { computeCSROIScores, calculateOverallCSROI } from '../utils/csroiCalculations';
 import { CSROIScores } from '../types/csroi';
+import { calculateAxisMatch } from '../utils/matching';
 
 interface MatchingViewProps {
   profiles: Profile[];
@@ -79,12 +80,6 @@ export function MatchingView({ profiles }: MatchingViewProps) {
   // Convert both profiles to CSROI scores first
   const culturalCSROI = computeCSROIScores(selectedCultural.dimensions);
   const profitCSROI = computeCSROIScores(selectedProfit.dimensions);
-
-  const calculateAxisMatch = (score1: number, score2: number): number => {
-    // scores are on 0-5 scale, convert to 0-100 for match percentage
-    const difference = Math.abs((score1 * 20) - (score2 * 20));
-    return Math.max(0, 100 - difference);
-  };
 
   // Calculate matches per CSROI dimension
   const csroiDimensions = Object.keys(culturalCSROI) as Array<keyof CSROIScores>;

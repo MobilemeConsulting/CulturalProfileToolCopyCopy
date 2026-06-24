@@ -229,3 +229,69 @@ export async function syncProfiles(
     return localProfiles;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Match results (admin matching / ranking)
+// ---------------------------------------------------------------------------
+
+const MATCH_RESULTS_TABLE = 'match_results';
+
+export interface MatchResult {
+  id?: string;
+  cultural_id: string;
+  profit_id: string;
+  match_score: number;
+  dimension_scores: unknown;
+  created_at?: string;
+}
+
+// Eén matchresultaat opslaan. Zelfde fallback-stijl: geen config -> false.
+export async function saveMatchResult(result: MatchResult): Promise<boolean> {
+  if (!supabase || !isConfigured()) {
+    console.warn('Supabase not configured, match result not saved');
+    return false;
+  }
+
+  try {
+    const { error } = await supabase.from(MATCH_RESULTS_TABLE).insert({
+      cultural_id: result.cultural_id,
+      profit_id: result.profit_id,
+      match_score: result.match_score,
+      dimension_scores: result.dimension_scores,
+    });
+
+    if (error) {
+      console.error('Failed to save match result:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving match result to Supabase:', error);
+    return false;
+  }
+}
+
+// Alle opgeslagen matchresultaten ophalen (nieuwste eerst).
+export async function getMatchResults(): Promise<MatchResult[]> {
+  if (!supabase || !isConfigured()) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(MATCH_RESULTS_TABLE)
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch match results:', error.message);
+      return [];
+    }
+
+    return (data ?? []) as MatchResult[];
+  } catch (error) {
+    console.error('Error fetching match results from Supabase:', error);
+    return [];
+  }
+}
