@@ -5,7 +5,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { AlertCircle, Check, ExternalLink, Settings, Loader2, Upload, Database } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { isGoogleSheetsConfigured, getAllProfilesFromSheets, saveBulkProfilesToSheets } from '../services/googleSheets';
+import { isConfigured as isSupabaseConfigured, getAllProfiles, saveBulkProfiles } from '../services/supabaseService';
 import { OrganisationProfile } from '../data/types';
 
 interface GoogleSheetsConfigProps {
@@ -21,7 +21,7 @@ export function GoogleSheetsConfig({ onConfigured, profiles }: GoogleSheetsConfi
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ success: number; failed: number } | null>(null);
-  const [isConfigured, setIsConfigured] = useState(isGoogleSheetsConfigured());
+  const [isConfigured, setIsConfigured] = useState(isSupabaseConfigured());
 
   const handleSave = () => {
     localStorage.setItem('googleSheetsUrl', url);
@@ -39,51 +39,31 @@ export function GoogleSheetsConfig({ onConfigured, profiles }: GoogleSheetsConfi
     setTesting(true);
     setTestResult(null);
 
-    // Valideer URL format
-    if (!url.includes('/exec')) {
+    // Supabase wordt geconfigureerd via environment variables (.env), niet via
+    // de invoervelden hieronder. We testen de verbinding door de profielen op
+    // te halen.
+    if (!isSupabaseConfigured()) {
       setTestResult({
         success: false,
-        message: '❌ De URL moet eindigen op /exec. Gebruik de "Active" deployment URL, NIET de test/dev URL.'
+        message: '❌ Supabase is niet geconfigureerd. Stel VITE_SUPABASE_URL en VITE_SUPABASE_ANON_KEY in je .env bestand in.'
       });
       setTesting(false);
       return;
     }
 
-    // Bewaar originele waarden VOOR we ze wijzigen
-    const oldUrl = localStorage.getItem('googleSheetsUrl');
-    const oldKey = localStorage.getItem('googleSheetsApiKey');
-
     try {
-      // Tijdelijk nieuwe waarden instellen voor test
-      localStorage.setItem('googleSheetsUrl', url);
-      localStorage.setItem('googleSheetsApiKey', apiKey);
+      const profiles = await getAllProfiles();
 
-      const profiles = await getAllProfilesFromSheets();
-      
       setTestResult({
         success: true,
         message: `Verbinding succesvol! ${profiles.length} profielen gevonden.`
       });
-
     } catch (error) {
       setTestResult({
         success: false,
         message: `Verbinding mislukt: ${error instanceof Error ? error.message : 'Onbekende fout'}`
       });
     } finally {
-      // Herstel ALTIJD oude waarden na test (gebruiker moet expliciet opslaan)
-      if (oldUrl) {
-        localStorage.setItem('googleSheetsUrl', oldUrl);
-      } else {
-        localStorage.removeItem('googleSheetsUrl');
-      }
-      
-      if (oldKey) {
-        localStorage.setItem('googleSheetsApiKey', oldKey);
-      } else {
-        localStorage.removeItem('googleSheetsApiKey');
-      }
-      
       setTesting(false);
     }
   };
@@ -107,7 +87,7 @@ export function GoogleSheetsConfig({ onConfigured, profiles }: GoogleSheetsConfi
     setUploadResult(null);
 
     try {
-      const result = await saveBulkProfilesToSheets(profiles);
+      const result = await saveBulkProfiles(profiles);
       setUploadResult(result);
     } catch (error) {
       setUploadResult({ success: 0, failed: profiles.length });

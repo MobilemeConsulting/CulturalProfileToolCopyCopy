@@ -6,17 +6,17 @@ import { FileEdit, Eye, Link2, BarChart3, Info, Sparkles, Upload, ExternalLink, 
 import { ExportButton } from './components/ExportButton';
 import { PasswordProtection } from './components/PasswordProtection';
 import { CSROIDashboard } from './components/CSROIDashboard';
-import { GoogleSheetsConfig } from './components/GoogleSheetsConfig';
+import { SupabaseConfig } from './components/SupabaseConfig';
 import { getAllDemoProfiles } from './data/demoProfiles';
 import { OrganisationProfile } from './data/types';
 import { migrateAllProfiles } from './utils/migrateProfiles';
-import { 
-  isGoogleSheetsConfigured, 
-  getAllProfilesFromSheets, 
-  saveProfileToSheets, 
-  deleteProfileFromSheets,
-  syncWithGoogleSheets 
-} from './services/googleSheets';
+import {
+  isConfigured,
+  getAllProfiles,
+  saveProfile,
+  deleteProfile,
+  syncProfiles
+} from './services/supabaseService';
 import { ProfileOutput } from './components/ProfileOutput';
 import { MatchingView } from './components/MatchingView';
 import { ProfileCreationWizard } from './components/ProfileCreationWizard';
@@ -127,21 +127,21 @@ export default function App() {
       // Save to localStorage
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProfiles));
       
-      // Probeer ook naar Google Sheets te saven (silent fail)
-      if (isGoogleSheetsConfigured()) {
-        saveProfileToSheets(profile)
+      // Probeer ook naar Supabase te saven (silent fail)
+      if (isConfigured()) {
+        saveProfile(profile)
           .then((success) => {
             if (success) {
-              console.log('✅ Profile saved to Google Sheets');
+              console.log('✅ Profile saved to Supabase');
             } else {
-              console.log('💾 Profile saved to localStorage only (Google Sheets sync failed)');
+              console.log('💾 Profile saved to localStorage only (Supabase sync failed)');
             }
           })
           .catch((error) => {
-            console.log('💾 Profile saved to localStorage only (Google Sheets error)');
+            console.log('💾 Profile saved to localStorage only (Supabase error)');
           });
       } else {
-        console.log('💾 Profile saved to localStorage (Google Sheets not configured)');
+        console.log('💾 Profile saved to localStorage (Supabase not configured)');
       }
       
       return updatedProfiles;
@@ -330,8 +330,8 @@ export default function App() {
                   </button>
                 </div>
                 
-                {/* Google Sheets Configuration */}
-                <GoogleSheetsConfig profiles={profiles} />
+                {/* Supabase Configuration */}
+                <SupabaseConfig profiles={profiles} />
                 
                 <SavedProfilesManager
                   profiles={profiles}
