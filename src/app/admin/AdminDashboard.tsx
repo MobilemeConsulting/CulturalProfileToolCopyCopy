@@ -124,62 +124,67 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-slate-900 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <LayoutDashboard className="w-6 h-6" /> Admin Dashboard
-            </h1>
-            <p className="text-slate-300 text-sm mt-1">
-              Beheer, matching-overzicht en statistieken. Enkel voor beheerders.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="/" className="text-sm text-slate-300 hover:text-white inline-flex items-center gap-1">
-              <ArrowLeft className="w-4 h-4" /> App
-            </a>
-            <button
-              onClick={onSignOut}
-              className="text-sm text-slate-300 hover:text-white inline-flex items-center gap-1"
-            >
-              <LogOut className="w-4 h-4" /> Uitloggen
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Zijbalk */}
+      <aside className="w-60 shrink-0 bg-slate-900 text-white flex flex-col sticky top-0 h-screen">
+        <div className="px-5 py-5 border-b border-slate-800">
+          <h1 className="text-lg font-bold flex items-center gap-2">
+            <LayoutDashboard className="w-5 h-5" /> Admin
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">Beheer &amp; statistieken</p>
         </div>
-        <div className="max-w-6xl mx-auto px-6 flex gap-1 overflow-x-auto">
+
+        <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
           {TABS.map((t) => {
             const Icon = t.icon;
             return (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 inline-flex items-center gap-2 transition-colors ${
+                className={`w-full px-3 py-2 text-sm rounded-lg inline-flex items-center gap-3 transition-colors ${
                   tab === t.id
-                    ? 'border-white text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'bg-slate-800 text-white'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
               >
-                <Icon className="w-4 h-4" /> {t.label}
+                <Icon className="w-4 h-4 shrink-0" /> {t.label}
               </button>
             );
           })}
-        </div>
-      </div>
+        </nav>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {tab === 'overview' && <OverviewSection profiles={profiles} savedCount={savedResults.length} />}
-        {tab === 'profiles' && <ProfilesSection profiles={profiles} onChanged={loadProfiles} />}
-        {tab === 'matrix' && <MatrixSection profiles={profiles} />}
-        {tab === 'ranking' && (
-          <RankingSection profiles={profiles} savedResults={savedResults} onSaved={refreshResults} />
-        )}
-        {tab === 'csroi' && <CsroiSection profiles={profiles} />}
-        {tab === 'gaps' && <GapsSection profiles={profiles} />}
-        {tab === 'quality' && <QualitySection profiles={profiles} />}
-        {tab === 'insights' && <InsightsSection profiles={profiles} />}
-        {tab === 'users' && <UsersSection />}
-      </div>
+        <div className="px-2 py-3 border-t border-slate-800 space-y-1">
+          <a
+            href="/"
+            className="w-full px-3 py-2 text-sm rounded-lg inline-flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800/50"
+          >
+            <ArrowLeft className="w-4 h-4" /> Naar de app
+          </a>
+          <button
+            onClick={onSignOut}
+            className="w-full px-3 py-2 text-sm rounded-lg inline-flex items-center gap-3 text-slate-400 hover:text-white hover:bg-slate-800/50"
+          >
+            <LogOut className="w-4 h-4" /> Uitloggen
+          </button>
+        </div>
+      </aside>
+
+      {/* Inhoud */}
+      <main className="flex-1 min-w-0">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          {tab === 'overview' && <OverviewSection profiles={profiles} savedCount={savedResults.length} />}
+          {tab === 'profiles' && <ProfilesSection profiles={profiles} onChanged={loadProfiles} />}
+          {tab === 'matrix' && <MatrixSection profiles={profiles} />}
+          {tab === 'ranking' && (
+            <RankingSection profiles={profiles} savedResults={savedResults} onSaved={refreshResults} />
+          )}
+          {tab === 'csroi' && <CsroiSection profiles={profiles} />}
+          {tab === 'gaps' && <GapsSection profiles={profiles} />}
+          {tab === 'quality' && <QualitySection profiles={profiles} />}
+          {tab === 'insights' && <InsightsSection profiles={profiles} />}
+          {tab === 'users' && <UsersSection />}
+        </div>
+      </main>
     </div>
   );
 }
