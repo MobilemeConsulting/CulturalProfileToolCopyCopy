@@ -83,14 +83,21 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${firecrawlKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ url: websiteUrl, formats: ['markdown'], onlyMainContent: true }),
+      body: JSON.stringify({
+        url: websiteUrl,
+        formats: ['markdown'],
+        onlyMainContent: true,
+        blockAds: true,
+        timeout: 15000, // cap de scrape zodat trage sites de call niet laten vastlopen
+      }),
     });
     if (!fcResp.ok) {
       const t = await fcResp.text();
       return json({ error: `Scrapen mislukt (${fcResp.status}): ${t.slice(0, 300)}` }, 400);
     }
     const fcData = await fcResp.json();
-    const siteText: string = (fcData?.data?.markdown ?? '').slice(0, 8000);
+    // 5000 tekens volstaan ruim voor missie/waarden/cultuur en houdt de Claude-call snel.
+    const siteText: string = (fcData?.data?.markdown ?? '').slice(0, 5000);
     if (!siteText.trim()) return json({ error: 'Geen tekst gevonden op de website.' }, 400);
 
     // 4. Bouw de prompt.
@@ -133,7 +140,7 @@ Analyseer en antwoord met UITSLUITEND één geldig JSON-object met exact deze ve
   "directieTeam": ["observaties over de directie/team-verschillen; lege array indien geen data"],
   "gesprekstarters": ["4 à 6 concrete openingsvragen of observaties voor een eerste gesprek, gericht op cultuur-cross-over met een culturele organisatie"]
 }
-Alle tekst in het Nederlands. Geen markdown, geen uitleg buiten de JSON.`;
+Alle tekst in het Nederlands en BONDIG (max 1-2 zinnen per item). Geen markdown, geen uitleg buiten de JSON.`;
 
     // 5. Claude (Sonnet) — gestructureerde JSON-output.
     const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -145,7 +152,7 @@ Alle tekst in het Nederlands. Geen markdown, geen uitleg buiten de JSON.`;
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1800,
+        max_tokens: 1200,
         system:
           'Je bent een strategisch adviseur voor AHHA, die culturele organisaties en bedrijven samenbrengt rond gedeelde waarden. Je antwoordt UITSLUITEND met geldige JSON (geen markdown, geen code fences), in het Nederlands.',
         messages: [{ role: 'user', content: prompt }],
