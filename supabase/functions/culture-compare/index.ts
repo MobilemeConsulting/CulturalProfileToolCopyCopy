@@ -123,15 +123,19 @@ ${dimText}
 INTERNE PERCEPTIEVERSCHILLEN (directie vs team, >20 punten):
 ${gapText}
 
-Taak:
-1. Distilleer kort de BEWEERDE missie, kernwaarden en bedrijfscultuur uit de website.
-2. Vergelijk met het GEMETEN profiel: waar sluit de communicatie aan op de meting, en waar wijkt ze af?
-3. Betrek de directie/team-verschillen waar relevant.
-4. Geef 4 à 6 concrete GESPREKSTARTERS (observaties of openingsvragen) voor een eerste gesprek met dit bedrijf, gericht op cultuur-cross-over met een culturele organisatie.
+Analyseer en antwoord met UITSLUITEND één geldig JSON-object met exact deze velden:
+{
+  "missie": "korte distillatie van de beweerde missie (string)",
+  "waarden": ["kernwaarden uit de website"],
+  "cultuur": "korte beschrijving van de beweerde bedrijfscultuur (string)",
+  "aansluiting": ["punten waar website en gemeten profiel overeenkomen"],
+  "afwijking": ["punten waar de beweerde cultuur afwijkt van het gemeten profiel"],
+  "directieTeam": ["observaties over de directie/team-verschillen; lege array indien geen data"],
+  "gesprekstarters": ["4 à 6 concrete openingsvragen of observaties voor een eerste gesprek, gericht op cultuur-cross-over met een culturele organisatie"]
+}
+Alle tekst in het Nederlands. Geen markdown, geen uitleg buiten de JSON.`;
 
-Schrijf in het Nederlands, bondig, met duidelijke kopjes.`;
-
-    // 5. Claude (Sonnet).
+    // 5. Claude (Sonnet) — gestructureerde JSON-output.
     const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -141,9 +145,9 @@ Schrijf in het Nederlands, bondig, met duidelijke kopjes.`;
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1600,
+        max_tokens: 1800,
         system:
-          'Je bent een strategisch adviseur voor AHHA, die culturele organisaties en bedrijven samenbrengt rond gedeelde waarden. Je schrijft helder, concreet en in het Nederlands.',
+          'Je bent een strategisch adviseur voor AHHA, die culturele organisaties en bedrijven samenbrengt rond gedeelde waarden. Je antwoordt UITSLUITEND met geldige JSON (geen markdown, geen code fences), in het Nederlands.',
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -152,10 +156,23 @@ Schrijf in het Nederlands, bondig, met duidelijke kopjes.`;
       return json({ error: `Claude-call mislukt (${aiResp.status}): ${t.slice(0, 300)}` }, 400);
     }
     const aiData = await aiResp.json();
-    const output: string =
+    const raw: string =
       aiData?.content?.map((c: { text?: string }) => c.text ?? '').join('') ?? '';
 
-    return json({ output }, 200);
+    // Strip eventuele code fences en parse JSON; bij falen geven we de ruwe tekst terug.
+    const cleaned = raw
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
+    let structured: unknown = null;
+    try {
+      structured = JSON.parse(cleaned);
+    } catch {
+      structured = null;
+    }
+
+    return json({ structured, raw }, 200);
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'Onbekende fout' }, 500);
   }

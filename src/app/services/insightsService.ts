@@ -26,12 +26,26 @@ export interface ConversationStarterArgs {
   gaps: GapSummary[];
 }
 
+export interface ConversationStarterResult {
+  missie: string;
+  waarden: string[];
+  cultuur: string;
+  aansluiting: string[];
+  afwijking: string[];
+  directieTeam: string[];
+  gesprekstarters: string[];
+}
+
 export async function generateConversationStarter(
   args: ConversationStarterArgs
-): Promise<{ output: string | null; error: string | null }> {
-  if (!supabase) return { output: null, error: 'Supabase is niet geconfigureerd.' };
+): Promise<{ structured: ConversationStarterResult | null; raw: string; error: string | null }> {
+  if (!supabase) return { structured: null, raw: '', error: 'Supabase is niet geconfigureerd.' };
   const { data, error } = await supabase.functions.invoke('culture-compare', { body: args });
-  if (error) return { output: null, error: error.message };
-  if (data?.error) return { output: null, error: data.error };
-  return { output: data?.output ?? '', error: null };
+  if (error) return { structured: null, raw: '', error: error.message };
+  if (data?.error) return { structured: null, raw: '', error: data.error };
+  return {
+    structured: (data?.structured ?? null) as ConversationStarterResult | null,
+    raw: data?.raw ?? '',
+    error: null,
+  };
 }
