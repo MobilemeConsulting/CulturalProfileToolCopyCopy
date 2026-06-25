@@ -32,7 +32,8 @@ import {
   dataQuality,
 } from '../utils/adminStats';
 import { UsersSection } from './UsersSection';
-import { FileDown, Mail } from 'lucide-react';
+import { ProfilesSection } from './ProfilesSection';
+import { FileDown, Mail, Database } from 'lucide-react';
 import { exportMatchReportToPdf } from '../utils/pdfExport';
 import { sendMatchReport, buildMatchReportHtml } from '../services/reportService';
 import {
@@ -58,10 +59,11 @@ export function matchBg(score: number): string {
   return 'bg-red-100 border-red-300';
 }
 
-type Tab = 'overview' | 'matrix' | 'ranking' | 'csroi' | 'gaps' | 'quality' | 'users';
+type Tab = 'overview' | 'profiles' | 'matrix' | 'ranking' | 'csroi' | 'gaps' | 'quality' | 'users';
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overzicht', icon: LayoutDashboard },
+  { id: 'profiles', label: 'Profielen', icon: Database },
   { id: 'matrix', label: 'Match-matrix', icon: Grid3x3 },
   { id: 'ranking', label: 'Ranking', icon: Trophy },
   { id: 'csroi', label: 'CSROI-benchmark', icon: BarChart3 },
@@ -76,21 +78,25 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [savedResults, setSavedResults] = useState<MatchResult[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      let loaded = await getAllProfiles();
-      if (!loaded || loaded.length === 0) {
-        const local = localStorage.getItem(STORAGE_KEY);
-        if (local) {
-          try {
-            loaded = JSON.parse(local) as OrganisationProfile[];
-          } catch {
-            loaded = [];
-          }
+  const loadProfiles = async () => {
+    let loaded = await getAllProfiles();
+    if (!loaded || loaded.length === 0) {
+      const local = localStorage.getItem(STORAGE_KEY);
+      if (local) {
+        try {
+          loaded = JSON.parse(local) as OrganisationProfile[];
+        } catch {
+          loaded = [];
         }
       }
-      if (!loaded || loaded.length === 0) loaded = getAllDemoProfiles();
-      setProfiles(loaded);
+    }
+    if (!loaded || loaded.length === 0) loaded = getAllDemoProfiles();
+    setProfiles(loaded);
+  };
+
+  useEffect(() => {
+    (async () => {
+      await loadProfiles();
       setSavedResults(await getMatchResults());
       setLoading(false);
     })();
@@ -152,6 +158,7 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {tab === 'overview' && <OverviewSection profiles={profiles} savedCount={savedResults.length} />}
+        {tab === 'profiles' && <ProfilesSection profiles={profiles} onChanged={loadProfiles} />}
         {tab === 'matrix' && <MatrixSection profiles={profiles} />}
         {tab === 'ranking' && (
           <RankingSection profiles={profiles} savedResults={savedResults} onSaved={refreshResults} />
