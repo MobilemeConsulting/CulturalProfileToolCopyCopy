@@ -33,7 +33,8 @@ import {
 } from '../utils/adminStats';
 import { UsersSection } from './UsersSection';
 import { ProfilesSection } from './ProfilesSection';
-import { FileDown, Mail, Database } from 'lucide-react';
+import { InsightsSection } from './InsightsSection';
+import { FileDown, Mail, Database, Sparkles } from 'lucide-react';
 import { exportMatchReportToPdf } from '../utils/pdfExport';
 import { sendMatchReport, buildMatchReportHtml } from '../services/reportService';
 import {
@@ -59,7 +60,16 @@ export function matchBg(score: number): string {
   return 'bg-red-100 border-red-300';
 }
 
-type Tab = 'overview' | 'profiles' | 'matrix' | 'ranking' | 'csroi' | 'gaps' | 'quality' | 'users';
+type Tab =
+  | 'overview'
+  | 'profiles'
+  | 'matrix'
+  | 'ranking'
+  | 'csroi'
+  | 'gaps'
+  | 'quality'
+  | 'insights'
+  | 'users';
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'overview', label: 'Overzicht', icon: LayoutDashboard },
@@ -69,6 +79,7 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'csroi', label: 'CSROI-benchmark', icon: BarChart3 },
   { id: 'gaps', label: 'Perceptiekloof', icon: AlertTriangle },
   { id: 'quality', label: 'Datakwaliteit', icon: ClipboardCheck },
+  { id: 'insights', label: 'Inzichten', icon: Sparkles },
   { id: 'users', label: 'Gebruikers', icon: UsersIcon },
 ];
 
@@ -166,6 +177,7 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
         {tab === 'csroi' && <CsroiSection profiles={profiles} />}
         {tab === 'gaps' && <GapsSection profiles={profiles} />}
         {tab === 'quality' && <QualitySection profiles={profiles} />}
+        {tab === 'insights' && <InsightsSection profiles={profiles} />}
         {tab === 'users' && <UsersSection />}
       </div>
     </div>

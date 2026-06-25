@@ -72,6 +72,7 @@ on conflict (user_id) do update set role = 'admin';
 Edge functions in [supabase/functions](supabase/functions):
 - `invite-user` — admin nodigt gebruiker uit (Supabase Auth invite, mail via Brevo-SMTP).
 - `send-match-report` — mailt matchrapport via Brevo API. Secrets: `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`.
+- `culture-compare` — scrapet bedrijfswebsite (Firecrawl) + vergelijkt met gemeten profiel/gaps via Claude Sonnet → gesprekstarter. Secrets: `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`. (Admin-tab "Inzichten".)
 ```bash
 supabase functions deploy invite-user
 supabase functions deploy send-match-report
