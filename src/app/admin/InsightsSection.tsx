@@ -41,28 +41,34 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
     setResult(null);
     setRaw('');
 
-    const gaps = perceptionGaps([profile])[0]?.gaps ?? [];
-    const res = await generateConversationStarter({
-      orgName: profile.meta.orgName || 'Onbekend',
-      websiteUrl: websiteUrl.trim(),
-      dimensions: profile.dimensions.map((d) => ({
-        label: d.label,
-        axes: d.axes.map((a) => ({ label: a.label, score: a.score })),
-      })),
-      gaps: gaps.map((g) => ({
-        dimensionLabel: g.dimensionLabel,
-        axisLabel: g.axisLabel,
-        leadership: g.leadership,
-        staff: g.staff,
-        diff: g.diff,
-      })),
-    });
+    try {
+      const gaps = perceptionGaps([profile])[0]?.gaps ?? [];
+      const res = await generateConversationStarter({
+        orgName: profile.meta.orgName || 'Onbekend',
+        websiteUrl: websiteUrl.trim(),
+        dimensions: profile.dimensions.map((d) => ({
+          label: d.label,
+          axes: d.axes.map((a) => ({ label: a.label, score: a.score })),
+        })),
+        gaps: gaps.map((g) => ({
+          dimensionLabel: g.dimensionLabel,
+          axisLabel: g.axisLabel,
+          leadership: g.leadership,
+          staff: g.staff,
+          diff: g.diff,
+        })),
+      });
 
-    setLoading(false);
-    if (res.error) setError(res.error);
-    else {
-      setResult(res.structured);
-      setRaw(res.raw);
+      if (res.error) setError(res.error);
+      else if (!res.structured && !res.raw) setError('Leeg antwoord ontvangen van culture-compare.');
+      else {
+        setResult(res.structured);
+        setRaw(res.raw);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Onbekende fout.');
+    } finally {
+      setLoading(false);
     }
   };
 

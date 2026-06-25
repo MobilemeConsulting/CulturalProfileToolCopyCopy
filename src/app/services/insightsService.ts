@@ -40,12 +40,34 @@ export async function generateConversationStarter(
   args: ConversationStarterArgs
 ): Promise<{ structured: ConversationStarterResult | null; raw: string; error: string | null }> {
   if (!supabase) return { structured: null, raw: '', error: 'Supabase is niet geconfigureerd.' };
-  const { data, error } = await supabase.functions.invoke('culture-compare', { body: args });
-  if (error) return { structured: null, raw: '', error: error.message };
-  if (data?.error) return { structured: null, raw: '', error: data.error };
-  return {
-    structured: (data?.structured ?? null) as ConversationStarterResult | null,
-    raw: data?.raw ?? '',
-    error: null,
-  };
+  try {
+    const { data, error } = await supabase.functions.invoke('culture-compare', { body: args });
+    if (error) {
+      // Probeer de echte foutboodschap uit de function-response te halen
+      // (anders is error.message generiek zoals "non-2xx status code").
+      let msg = error.message;
+      try {
+        const ctx = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
+        if (ctx?.json) {
+          const body = await ctx.json();
+          if (body?.error) msg = body.error;
+        }
+      } catch {
+        /* houd generieke message */
+      }
+      return { structured: null, raw: '', error: msg };
+    }
+    if (data?.error) return { structured: null, raw: '', error: data.error };
+    return {
+      structured: (data?.structured ?? null) as ConversationStarterResult | null,
+      raw: data?.raw ?? '',
+      error: null,
+    };
+  } catch (e) {
+    return {
+      structured: null,
+      raw: '',
+      error: e instanceof Error ? e.message : 'Onbekende fout bij het aanroepen van culture-compare.',
+    };
+  }
 }
