@@ -80,17 +80,32 @@ export async function inviteUser(
 ): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const redirectTo = `${window.location.origin}/admin/accept`;
-  const { data, error } = await supabase.functions.invoke('invite-user', {
-    body: { email, role, redirectTo },
-  });
-  // Bij een non-2xx status bevat `error` alleen een generieke melding,
-  // maar `data` kan het echte foutbericht van de edge function bevatten.
-  if (error) {
-    const detail = data?.error || error.message;
-    return { error: detail };
+  try {
+    const { data, error } = await supabase.functions.invoke('invite-user', {
+      body: { email, role, redirectTo },
+    });
+    if (error) {
+      // FunctionsHttpError bevat de response body in error.context
+      let detail = error.message;
+      try {
+        const ctx = (error as any).context;
+        if (ctx && typeof ctx.json === 'function') {
+          const body = await ctx.json();
+          if (body?.error) detail = body.error;
+        } else if (data?.error) {
+          detail = data.error;
+        }
+      } catch {
+        // ctx.json() kan falen — gebruik dan data of error.message
+        if (data?.error) detail = data.error;
+      }
+      return { error: detail };
+    }
+    if (data?.error) return { error: data.error };
+    return { error: null };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Onbekende fout bij uitnodigen.' };
   }
-  if (data?.error) return { error: data.error };
-  return { error: null };
 }
 
 // Rol van een bestaande gebruiker wijzigen (admin RLS staat dit toe).
