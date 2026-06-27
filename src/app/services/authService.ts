@@ -74,6 +74,8 @@ export async function listUsers(): Promise<AdminUser[]> {
 }
 
 // Nieuwe gebruiker uitnodigen via de Edge Function (mail loopt via Brevo-SMTP).
+// Gebruikt een directe fetch i.p.v. supabase.functions.invoke zodat we de
+// volledige foutmelding van de edge function kunnen uitlezen.
 export async function inviteUser(
   email: string,
   role: 'admin' | 'user'
@@ -81,36 +83,26 @@ export async function inviteUser(
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const redirectTo = `${window.location.origin}/admin/accept`;
   try {
-    const { data, error } = await supabase.functions.invoke('invite-user', {
-      body: { email, role, redirectTo },
+    const { data: { session } } = await supabase.auth.getSession();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/invite-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? anonKey}`,
+        'apikey': anonKey,
+      },
+      body: JSON.stringify({ email, role, redirectTo }),
     });
-    if (error) {
-      // Probeer de echte fout te achterhalen uit verschillende bronnen
-      const sources: string[] = [];
-      // 1. data.error (soms gevuld ondanks error)
-      if (data?.error) sources.push(data.error);
-      // 2. error.context (Response object bij FunctionsHttpError)
-      try {
-        const ctx = (error as any).context;
-        if (ctx && typeof ctx.text === 'function') {
-          const text = await ctx.text();
-          if (text && text !== '{}') {
-            try {
-              const parsed = JSON.parse(text);
-              if (parsed?.error) sources.push(parsed.error);
-              else if (parsed?.message) sources.push(parsed.message);
-              else if (parsed?.msg) sources.push(parsed.msg);
-            } catch {
-              sources.push(text);
-            }
-          }
-        }
-      } catch { /* context niet beschikbaar */ }
-      // 3. error.message als fallback
-      const detail = sources.length > 0 ? sources[0] : error.message;
-      return { error: detail };
+
+    const body = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return { error: body?.error || body?.message || `Fout ${res.status}: ${res.statusText}` };
     }
-    if (data?.error) return { error: data.error };
+    if (body?.error) return { error: body.error };
     return { error: null };
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Onbekende fout bij uitnodigen.' };
