@@ -83,7 +83,12 @@ export async function inviteUser(
   const { data, error } = await supabase.functions.invoke('invite-user', {
     body: { email, role, redirectTo },
   });
-  if (error) return { error: error.message };
+  // Bij een non-2xx status bevat `error` alleen een generieke melding,
+  // maar `data` kan het echte foutbericht van de edge function bevatten.
+  if (error) {
+    const detail = data?.error || error.message;
+    return { error: detail };
+  }
   if (data?.error) return { error: data.error };
   return { error: null };
 }
