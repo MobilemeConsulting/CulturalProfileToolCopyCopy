@@ -1,12 +1,10 @@
 // Supabase Edge Function: invite-user
 // Nodigt een nieuwe gebruiker uit (admin-only) en kent een rol toe.
-// De uitnodigingsmail wordt door Supabase Auth verstuurd via de geconfigureerde
-// SMTP-provider (Brevo). De service_role key blijft hier server-side.
+// Gebruikt generateLink i.p.v. inviteUserByEmail om SMTP-problemen te omzeilen.
+// De invite-link wordt teruggegeven zodat de admin die kan delen.
 //
 // Deploy:
-//   supabase functions deploy invite-user
-// Vereiste secrets zijn standaard beschikbaar in Edge Functions:
-//   SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+//   supabase functions deploy invite-user --project-ref nzerixyxmsrcpdqnqytl
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -58,26 +56,41 @@ Deno.serve(async (req) => {
     }
     const newRole = role === 'admin' ? 'admin' : 'user';
 
-    // 3. Nodig uit met de service_role client (server-side).
+    // 3. Genereer invite-link (omzeilt SMTP — stuurt GEEN mail).
     const admin = createClient(supabaseUrl, serviceKey);
-    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo,
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      type: 'invite',
+      email,
+      options: { redirectTo },
     });
 
-    if (inviteError || !invited?.user) {
-      return json({ error: inviteError?.message ?? 'Uitnodigen mislukt' }, 400);
+    if (linkError || !linkData?.user) {
+      const msg = linkError?.message
+        || (linkError ? JSON.stringify(linkError) : null)
+        || 'Invite-link genereren mislukt';
+      return json({ error: msg }, 400);
     }
 
     // 4. Ken de rol toe.
     const { error: roleError } = await admin
       .from('user_roles')
-      .upsert({ user_id: invited.user.id, role: newRole });
+      .upsert({ user_id: linkData.user.id, role: newRole });
 
     if (roleError) {
-      return json({ error: `Uitgenodigd, maar rol toekennen mislukte: ${roleError.message}` }, 207);
+      return json({ error: `Gebruiker aangemaakt, maar rol toekennen mislukte: ${roleError.message}` }, 207);
     }
 
-    return json({ success: true, userId: invited.user.id, role: newRole }, 200);
+    // 5. Bouw de volledige invite-URL op basis van de hashed token.
+    // generateLink geeft een action_link terug die we direct kunnen gebruiken,
+    // of we bouwen er zelf een van met de token_hash + redirect.
+    const inviteLink = linkData.properties?.action_link || '';
+
+    return json({
+      success: true,
+      userId: linkData.user.id,
+      role: newRole,
+      inviteLink,
+    }, 200);
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : 'Onbekende fout' }, 500);
   }

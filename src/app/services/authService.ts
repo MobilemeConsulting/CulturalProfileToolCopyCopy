@@ -73,13 +73,12 @@ export async function listUsers(): Promise<AdminUser[]> {
   return (data ?? []) as AdminUser[];
 }
 
-// Nieuwe gebruiker uitnodigen via de Edge Function (mail loopt via Brevo-SMTP).
-// Gebruikt een directe fetch i.p.v. supabase.functions.invoke zodat we de
-// volledige foutmelding van de edge function kunnen uitlezen.
+// Nieuwe gebruiker uitnodigen via de Edge Function.
+// Geeft { error, inviteLink } terug — de link kan getoond worden als SMTP niet werkt.
 export async function inviteUser(
   email: string,
   role: 'admin' | 'user'
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; inviteLink?: string }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const redirectTo = `${window.location.origin}/admin/accept`;
   try {
@@ -87,11 +86,7 @@ export async function inviteUser(
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-    const url = `${supabaseUrl}/functions/v1/invite-user`;
-    console.log('[invite-user] POST', url, { email, role, redirectTo });
-    console.log('[invite-user] session?', !!session, 'token length:', session?.access_token?.length);
-
-    const res = await fetch(url, {
+    const res = await fetch(`${supabaseUrl}/functions/v1/invite-user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,18 +97,15 @@ export async function inviteUser(
     });
 
     const rawText = await res.text();
-    console.log('[invite-user] status:', res.status, res.statusText);
-    console.log('[invite-user] body:', rawText);
-
     let body: any = {};
     try { body = JSON.parse(rawText); } catch { /* niet-JSON response */ }
 
     if (!res.ok) {
-      const msg = body?.error || body?.message || body?.msg || rawText || `Fout ${res.status}: ${res.statusText}`;
+      const msg = body?.error || body?.message || rawText || `Fout ${res.status}: ${res.statusText}`;
       return { error: msg };
     }
     if (body?.error) return { error: body.error };
-    return { error: null };
+    return { error: null, inviteLink: body?.inviteLink || undefined };
   } catch (e) {
     return { error: e instanceof Error ? e.message : 'Onbekende fout bij uitnodigen.' };
   }

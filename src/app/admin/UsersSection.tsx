@@ -20,17 +20,25 @@ export function UsersSection() {
     load();
   }, []);
 
+  const [inviteLink, setInviteLink] = useState('');
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviting(true);
     setFeedback(null);
-    const { error } = await inviteUser(email, role);
+    setInviteLink('');
+    const { error, inviteLink: link } = await inviteUser(email, role);
     setInviting(false);
     if (error) {
       setFeedback({ ok: false, msg: error });
       return;
     }
-    setFeedback({ ok: true, msg: `Uitnodiging verstuurd naar ${email}.` });
+    if (link) {
+      setInviteLink(link);
+      setFeedback({ ok: true, msg: `Gebruiker aangemaakt! Kopieer de invite-link hieronder en stuur die naar ${email}.` });
+    } else {
+      setFeedback({ ok: true, msg: `Uitnodiging verstuurd naar ${email}.` });
+    }
     setEmail('');
     await load();
   };
@@ -99,6 +107,27 @@ export function UsersSection() {
           >
             {feedback.ok ? '✓ ' : '✗ '}
             {feedback.msg}
+          </div>
+        )}
+
+        {inviteLink && (
+          <div className="mt-3 bg-blue-50 border border-blue-200 rounded-md px-3 py-3 space-y-2">
+            <p className="text-sm font-medium text-blue-900">Invite-link (kopieer en stuur naar de gebruiker):</p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                readOnly
+                value={inviteLink}
+                className="flex-1 text-xs bg-white border border-blue-300 rounded px-2 py-1.5 text-blue-800 font-mono"
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+              <button
+                onClick={() => { navigator.clipboard.writeText(inviteLink); }}
+                className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+              >
+                Kopiëren
+              </button>
+            </div>
           </div>
         )}
       </div>
