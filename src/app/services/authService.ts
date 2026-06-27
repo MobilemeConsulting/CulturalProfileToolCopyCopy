@@ -85,20 +85,29 @@ export async function inviteUser(
       body: { email, role, redirectTo },
     });
     if (error) {
-      // FunctionsHttpError bevat de response body in error.context
-      let detail = error.message;
+      // Probeer de echte fout te achterhalen uit verschillende bronnen
+      const sources: string[] = [];
+      // 1. data.error (soms gevuld ondanks error)
+      if (data?.error) sources.push(data.error);
+      // 2. error.context (Response object bij FunctionsHttpError)
       try {
         const ctx = (error as any).context;
-        if (ctx && typeof ctx.json === 'function') {
-          const body = await ctx.json();
-          if (body?.error) detail = body.error;
-        } else if (data?.error) {
-          detail = data.error;
+        if (ctx && typeof ctx.text === 'function') {
+          const text = await ctx.text();
+          if (text && text !== '{}') {
+            try {
+              const parsed = JSON.parse(text);
+              if (parsed?.error) sources.push(parsed.error);
+              else if (parsed?.message) sources.push(parsed.message);
+              else if (parsed?.msg) sources.push(parsed.msg);
+            } catch {
+              sources.push(text);
+            }
+          }
         }
-      } catch {
-        // ctx.json() kan falen — gebruik dan data of error.message
-        if (data?.error) detail = data.error;
-      }
+      } catch { /* context niet beschikbaar */ }
+      // 3. error.message als fallback
+      const detail = sources.length > 0 ? sources[0] : error.message;
       return { error: detail };
     }
     if (data?.error) return { error: data.error };
