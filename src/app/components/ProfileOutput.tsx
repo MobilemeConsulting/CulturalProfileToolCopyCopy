@@ -158,7 +158,7 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
                 </div>
               )}
               <div>
-                <h2 className="text-4xl font-bold text-white drop-shadow-2xl">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-2xl">
                   {profile.meta.orgName || 'Uw Organisatie'}
                 </h2>
                 <p className="text-purple-100 text-xl drop-shadow-lg">
@@ -398,7 +398,7 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
 
                         {/* Show breakdown for profit profiles */}
                         {profile.organisationType === 'profit' && leaderAxis && staffAxis && (
-                          <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                             <div className="bg-blue-50 p-2 rounded border border-blue-200">
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-blue-700 flex items-center gap-1">

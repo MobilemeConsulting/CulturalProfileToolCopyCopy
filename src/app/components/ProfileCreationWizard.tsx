@@ -57,7 +57,7 @@ export const ProfileCreationWizard: React.FC<ProfileCreationWizardProps> = ({
       <div className="min-h-screen bg-white p-8">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="text-5xl font-normal text-gray-900 mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-gray-900 mb-4">
               Nieuw Organisatieprofiel
             </h1>
             <div className="w-24 h-0.5 bg-teal-600 mx-auto mb-6"></div>
@@ -68,7 +68,7 @@ export const ProfileCreationWizard: React.FC<ProfileCreationWizardProps> = ({
 
           {/* Import optie */}
           <div className="mb-12 bg-gray-50 border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <Upload className="w-6 h-6 text-teal-600" />
                 <div>

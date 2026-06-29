@@ -36,7 +36,7 @@ export function MatchingView({ profiles }: MatchingViewProps) {
   if (culturalProfiles.length === 0 || profitProfiles.length === 0) {
     return (
       <Card className="shadow-lg">
-        <CardContent className="p-12 text-center">
+        <CardContent className="p-6 sm:p-12 text-center">
           <AlertCircle className="w-16 h-16 mx-auto mb-4 text-slate-400" />
           <h3 className="text-xl font-semibold text-slate-900 mb-2">
             Onvoldoende profielen voor matching
@@ -63,7 +63,7 @@ export function MatchingView({ profiles }: MatchingViewProps) {
   if (!selectedCultural || !selectedProfit) {
     return (
       <Card className="shadow-lg">
-        <CardContent className="p-12 text-center">
+        <CardContent className="p-6 sm:p-12 text-center">
           <AlertCircle className="w-16 h-16 mx-auto mb-4 text-slate-400" />
           <h3 className="text-xl font-semibold text-slate-900 mb-2">
             Selecteer profielen

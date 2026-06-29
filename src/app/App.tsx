@@ -266,10 +266,10 @@ export default function App() {
         
         <div className="relative max-w-7xl mx-auto px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold text-white mb-6 tracking-tight">
-              AHHA overbrugt de kloof tussen<br />cultuur en bedrijven
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-6 tracking-tight">
+              AHHA overbrugt de kloof tussen<br className="hidden sm:inline" /> cultuur en bedrijven
             </h1>
-            <p className="text-xl text-gray-300 font-light max-w-3xl mx-auto">
+            <p className="text-base sm:text-xl text-gray-300 font-light max-w-3xl mx-auto">
               Match culturele organisaties met profit bedrijven op basis van gedeelde waarden en doelstellingen
             </p>
           </div>
@@ -359,7 +359,7 @@ export default function App() {
           <TabsContent value="view">
             {currentProfile && (
               <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5 mb-6">
+                <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
                   <TabsTrigger value="overview" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
                     Overzicht

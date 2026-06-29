@@ -604,7 +604,7 @@ export const ProfitProfileForm: React.FC<ProfitProfileFormProps> = ({ onComplete
                             <span className="font-medium text-gray-900">{axis.label}</span>
                             <span className="text-2xl font-light text-teal-600">{weightedScore}</span>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <UserCircle className="w-4 h-4" />
                               <span>Directie: {leadershipScore}</span>

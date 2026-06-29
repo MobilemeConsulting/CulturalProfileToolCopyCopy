@@ -11,7 +11,7 @@ export function AhhaHeader() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-8">
+          <nav className="flex items-center gap-3 sm:gap-4 lg:gap-8">
             <a href="#" className="text-sm text-gray-700 hover:text-teal-600 transition-colors">
               Home
             </a>

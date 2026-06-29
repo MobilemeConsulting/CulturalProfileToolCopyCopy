@@ -1,7 +1,6 @@
 // Supabase Edge Function: invite-user
-// Nodigt een nieuwe gebruiker uit (admin-only) en kent een rol toe.
-// Gebruikt generateLink i.p.v. inviteUserByEmail om SMTP-problemen te omzeilen.
-// De invite-link wordt teruggegeven zodat de admin die kan delen.
+// Gebruikersbeheer (admin-only): invite, delete, resend.
+// Actie bepaald door `action` veld in de body (default: 'invite').
 //
 // Deploy:
 //   supabase functions deploy invite-user --project-ref nzerixyxmsrcpdqnqytl
@@ -49,15 +48,40 @@ Deno.serve(async (req) => {
       return json({ error: 'Geen admin-rechten' }, 403);
     }
 
-    // 2. Lees payload.
-    const { email, role, redirectTo } = await req.json();
+    const body = await req.json();
+    const action = body.action || 'invite';
+    const admin = createClient(supabaseUrl, serviceKey);
+
+    // ---- DELETE ----
+    if (action === 'delete') {
+      const { userId } = body;
+      if (!userId) return json({ error: 'userId ontbreekt' }, 400);
+
+      // Voorkom dat admin zichzelf verwijdert
+      if (userId === user.id) {
+        return json({ error: 'Je kunt jezelf niet verwijderen' }, 400);
+      }
+
+      // Verwijder rol uit user_roles
+      await admin.from('user_roles').delete().eq('user_id', userId);
+
+      // Verwijder gebruiker uit Supabase Auth
+      const { error: delError } = await admin.auth.admin.deleteUser(userId);
+      if (delError) {
+        return json({ error: delError.message }, 400);
+      }
+
+      return json({ success: true }, 200);
+    }
+
+    // ---- INVITE / RESEND ----
+    const { email, role, redirectTo } = body;
     if (!email) {
       return json({ error: 'E-mailadres ontbreekt' }, 400);
     }
     const newRole = role === 'admin' ? 'admin' : 'user';
 
-    // 3. Genereer invite-link (omzeilt SMTP — stuurt GEEN mail).
-    const admin = createClient(supabaseUrl, serviceKey);
+    // Genereer invite-link (omzeilt SMTP — stuurt GEEN mail).
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
       type: 'invite',
       email,
@@ -71,7 +95,7 @@ Deno.serve(async (req) => {
       return json({ error: msg }, 400);
     }
 
-    // 4. Ken de rol toe.
+    // Ken de rol toe.
     const { error: roleError } = await admin
       .from('user_roles')
       .upsert({ user_id: linkData.user.id, role: newRole });
@@ -80,9 +104,6 @@ Deno.serve(async (req) => {
       return json({ error: `Gebruiker aangemaakt, maar rol toekennen mislukte: ${roleError.message}` }, 207);
     }
 
-    // 5. Bouw de volledige invite-URL op basis van de hashed token.
-    // generateLink geeft een action_link terug die we direct kunnen gebruiken,
-    // of we bouwen er zelf een van met de token_hash + redirect.
     const inviteLink = linkData.properties?.action_link || '';
 
     return json({

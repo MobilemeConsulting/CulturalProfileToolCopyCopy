@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { UserPlus, Loader2, Check, Mail, Shield, User as UserIcon, RefreshCw } from 'lucide-react';
-import { listUsers, inviteUser, setUserRole, AdminUser } from '../services/authService';
+import { UserPlus, Loader2, Check, Mail, Shield, User as UserIcon, RefreshCw, Trash2, Send } from 'lucide-react';
+import { listUsers, inviteUser, setUserRole, deleteUser, resendInvite, AdminUser } from '../services/authService';
 
 export function UsersSection() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -43,6 +43,9 @@ export function UsersSection() {
     await load();
   };
 
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
   const handleRoleChange = async (user: AdminUser, newRole: 'admin' | 'user') => {
     const { error } = await setUserRole(user.id, newRole);
     if (error) {
@@ -50,6 +53,36 @@ export function UsersSection() {
       return;
     }
     await load();
+  };
+
+  const handleDelete = async (user: AdminUser) => {
+    setActionLoading(user.id);
+    setFeedback(null);
+    const { error } = await deleteUser(user.id);
+    setActionLoading(null);
+    setConfirmDelete(null);
+    if (error) {
+      setFeedback({ ok: false, msg: error });
+      return;
+    }
+    setFeedback({ ok: true, msg: `${user.email} is verwijderd.` });
+    await load();
+  };
+
+  const handleResend = async (user: AdminUser) => {
+    setActionLoading(user.id);
+    setFeedback(null);
+    setInviteLink('');
+    const { error, inviteLink: link } = await resendInvite(user.email, user.role);
+    setActionLoading(null);
+    if (error) {
+      setFeedback({ ok: false, msg: error });
+      return;
+    }
+    if (link) {
+      setInviteLink(link);
+      setFeedback({ ok: true, msg: `Nieuwe invite-link gegenereerd voor ${user.email}. Kopieer hieronder.` });
+    }
   };
 
   return (
@@ -60,11 +93,11 @@ export function UsersSection() {
           <UserPlus className="w-5 h-5" /> Nieuwe gebruiker uitnodigen
         </h2>
         <p className="text-sm text-slate-500 mb-4">
-          De uitnodiging wordt per e-mail verstuurd (via Brevo-SMTP). De gebruiker kiest zelf een
-          wachtwoord via de link.
+          Er wordt een invite-link gegenereerd die je kopieert en deelt. De gebruiker kiest zelf een
+          wachtwoord via de link. De link is 24 uur geldig.
         </p>
-        <form onSubmit={handleInvite} className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[220px]">
+        <form onSubmit={handleInvite} className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3">
+          <div className="flex-1 min-w-0">
             <label className="block text-sm font-medium text-slate-700 mb-1">E-mailadres</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -155,30 +188,81 @@ export function UsersSection() {
         ) : (
           <div className="divide-y divide-slate-100">
             {users.map((u) => (
-              <div key={u.id} className="py-3 flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-slate-900 truncate flex items-center gap-2">
-                    {u.role === 'admin' ? (
-                      <Shield className="w-4 h-4 text-slate-700" />
-                    ) : (
-                      <UserIcon className="w-4 h-4 text-slate-400" />
-                    )}
-                    {u.email}
+              <div key={u.id} className="py-3 space-y-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-slate-900 truncate flex items-center gap-2">
+                      {u.role === 'admin' ? (
+                        <Shield className="w-4 h-4 text-slate-700" />
+                      ) : (
+                        <UserIcon className="w-4 h-4 text-slate-400" />
+                      )}
+                      {u.email}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {u.last_sign_in_at
+                        ? `Laatste login: ${new Date(u.last_sign_in_at).toLocaleString('nl-BE')}`
+                        : 'Nog niet ingelogd'}
+                    </div>
                   </div>
-                  <div className="text-xs text-slate-400">
-                    {u.last_sign_in_at
-                      ? `Laatste login: ${new Date(u.last_sign_in_at).toLocaleString('nl-BE')}`
-                      : 'Nog niet ingelogd'}
+                  <div className="flex items-center gap-2">
+                    {/* Opnieuw uitnodigen (alleen als nog niet ingelogd) */}
+                    {!u.last_sign_in_at && (
+                      <button
+                        onClick={() => handleResend(u)}
+                        disabled={actionLoading === u.id}
+                        title="Nieuwe invite-link genereren"
+                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
+                      >
+                        {actionLoading === u.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
+                    {/* Rol wijzigen */}
+                    <select
+                      value={u.role}
+                      onChange={(e) => handleRoleChange(u, e.target.value as 'admin' | 'user')}
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    >
+                      <option value="user">user</option>
+                      <option value="admin">admin</option>
+                    </select>
+                    {/* Verwijderen */}
+                    <button
+                      onClick={() => setConfirmDelete(u.id)}
+                      disabled={actionLoading === u.id}
+                      title="Gebruiker verwijderen"
+                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <select
-                  value={u.role}
-                  onChange={(e) => handleRoleChange(u, e.target.value as 'admin' | 'user')}
-                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
-                >
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </select>
+                {/* Bevestigingsdialoog voor verwijderen */}
+                {confirmDelete === u.id && (
+                  <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                    <p className="text-sm text-red-800 flex-1">
+                      {u.email} definitief verwijderen?
+                    </p>
+                    <button
+                      onClick={() => handleDelete(u)}
+                      disabled={actionLoading === u.id}
+                      className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50 inline-flex items-center gap-1"
+                    >
+                      {actionLoading === u.id && <Loader2 className="w-3 h-3 animate-spin" />}
+                      Ja, verwijder
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(null)}
+                      className="px-3 py-1 bg-white text-slate-600 text-xs rounded border border-slate-300 hover:bg-slate-50"
+                    >
+                      Annuleren
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

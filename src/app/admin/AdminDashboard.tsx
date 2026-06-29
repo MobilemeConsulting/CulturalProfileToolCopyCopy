@@ -14,6 +14,8 @@ import {
   Save,
   Loader2,
   Check,
+  Menu,
+  X,
 } from 'lucide-react';
 import { OrganisationProfile } from '../data/types';
 import {
@@ -87,6 +89,7 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
   const [profiles, setProfiles] = useState<OrganisationProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [savedResults, setSavedResults] = useState<MatchResult[]>([]);
 
   const loadProfiles = async () => {
@@ -124,10 +127,20 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      {/* Zijbalk */}
-      <aside className="w-60 shrink-0 bg-slate-900 text-white flex flex-col sticky top-0 h-screen">
-        <div className="px-5 py-5 border-b border-slate-800">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      {/* Mobiele topbar */}
+      <div className="md:hidden flex items-center justify-between bg-slate-900 text-white px-4 py-3 sticky top-0 z-40">
+        <h1 className="text-lg font-bold flex items-center gap-2">
+          <LayoutDashboard className="w-5 h-5" /> Admin
+        </h1>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1">
+          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Zijbalk — altijd zichtbaar op desktop, toggle op mobiel */}
+      <aside className={`${sidebarOpen ? 'block' : 'hidden'} md:block w-full md:w-60 shrink-0 bg-slate-900 text-white flex flex-col md:sticky md:top-0 md:h-screen z-30`}>
+        <div className="hidden md:block px-5 py-5 border-b border-slate-800">
           <h1 className="text-lg font-bold flex items-center gap-2">
             <LayoutDashboard className="w-5 h-5" /> Admin
           </h1>
@@ -140,7 +153,7 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
             return (
               <button
                 key={t.id}
-                onClick={() => setTab(t.id)}
+                onClick={() => { setTab(t.id); setSidebarOpen(false); }}
                 className={`w-full px-3 py-2 text-sm rounded-lg inline-flex items-center gap-3 transition-colors ${
                   tab === t.id
                     ? 'bg-slate-800 text-white'
@@ -209,7 +222,7 @@ function OverviewSection({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {tiles.map((t) => (
           <div key={t.label} className="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
             <div className="text-3xl font-bold text-slate-900">{t.value}</div>

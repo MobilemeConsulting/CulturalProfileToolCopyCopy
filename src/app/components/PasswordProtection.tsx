@@ -27,7 +27,7 @@ export function PasswordProtection({ onUnlock }: PasswordProtectionProps) {
   return (
     <div className="min-h-[500px] flex items-center justify-center p-8">
       <div className="max-w-md w-full">
-        <div className="bg-white border border-gray-200 p-12">
+        <div className="bg-white border border-gray-200 p-6 sm:p-8 lg:p-12">
           {/* Header */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-16 h-16 border border-teal-600 mb-6">
