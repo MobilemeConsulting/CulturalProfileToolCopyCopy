@@ -74,6 +74,21 @@ Deno.serve(async (req) => {
       return json({ success: true }, 200);
     }
 
+    // ---- RESET PASSWORD ----
+    if (action === 'reset-password') {
+      const { userId, newPassword } = body;
+      if (!userId || !newPassword) return json({ error: 'userId en newPassword zijn verplicht' }, 400);
+      if (newPassword.length < 8) return json({ error: 'Wachtwoord moet minstens 8 tekens zijn' }, 400);
+
+      const { error: resetError } = await admin.auth.admin.updateUserById(userId, {
+        password: newPassword,
+      });
+      if (resetError) {
+        return json({ error: resetError.message }, 400);
+      }
+      return json({ success: true }, 200);
+    }
+
     // ---- INVITE / RESEND ----
     const { email, role, redirectTo } = body;
     if (!email) {

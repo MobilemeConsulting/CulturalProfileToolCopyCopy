@@ -161,6 +161,40 @@ export async function resendInvite(
   return inviteUser(email, role);
 }
 
+// Wachtwoord van een andere gebruiker resetten (admin-only, via edge function).
+export async function resetUserPassword(
+  userId: string,
+  newPassword: string
+): Promise<{ error: string | null }> {
+  if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/invite-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? anonKey}`,
+        'apikey': anonKey,
+      },
+      body: JSON.stringify({ action: 'reset-password', userId, newPassword }),
+    });
+
+    const rawText = await res.text();
+    let body: any = {};
+    try { body = JSON.parse(rawText); } catch { /* niet-JSON response */ }
+
+    if (!res.ok) {
+      return { error: body?.error || rawText || `Fout ${res.status}` };
+    }
+    return { error: null };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Onbekende fout bij wachtwoord resetten.' };
+  }
+}
+
 // Eigen wachtwoord instellen (gebruikt bij het accepteren van een uitnodiging).
 export async function setPassword(password: string): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };

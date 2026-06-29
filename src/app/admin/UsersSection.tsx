@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { UserPlus, Loader2, Check, Mail, Shield, User as UserIcon, RefreshCw, Trash2, Send } from 'lucide-react';
-import { listUsers, inviteUser, setUserRole, deleteUser, resendInvite, AdminUser } from '../services/authService';
+import { UserPlus, Loader2, Check, Mail, Shield, User as UserIcon, RefreshCw, Trash2, Send, KeyRound } from 'lucide-react';
+import { listUsers, inviteUser, setUserRole, deleteUser, resendInvite, resetUserPassword, AdminUser } from '../services/authService';
 
 export function UsersSection() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -44,6 +44,8 @@ export function UsersSection() {
   };
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [resetPwUser, setResetPwUser] = useState<string | null>(null);
+  const [newPw, setNewPw] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const handleRoleChange = async (user: AdminUser, newRole: 'admin' | 'user') => {
@@ -83,6 +85,24 @@ export function UsersSection() {
       setInviteLink(link);
       setFeedback({ ok: true, msg: `Nieuwe invite-link gegenereerd voor ${user.email}. Kopieer hieronder.` });
     }
+  };
+
+  const handleResetPassword = async (user: AdminUser) => {
+    if (newPw.length < 8) {
+      setFeedback({ ok: false, msg: 'Wachtwoord moet minstens 8 tekens zijn.' });
+      return;
+    }
+    setActionLoading(user.id);
+    setFeedback(null);
+    const { error } = await resetUserPassword(user.id, newPw);
+    setActionLoading(null);
+    setResetPwUser(null);
+    setNewPw('');
+    if (error) {
+      setFeedback({ ok: false, msg: error });
+      return;
+    }
+    setFeedback({ ok: true, msg: `Wachtwoord ingesteld voor ${user.email}. Deel het veilig met de gebruiker.` });
   };
 
   return (
@@ -230,6 +250,15 @@ export function UsersSection() {
                       <option value="user">user</option>
                       <option value="admin">admin</option>
                     </select>
+                    {/* Wachtwoord resetten */}
+                    <button
+                      onClick={() => { setResetPwUser(u.id); setNewPw(''); }}
+                      disabled={actionLoading === u.id}
+                      title="Wachtwoord instellen"
+                      className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-md transition-colors disabled:opacity-50"
+                    >
+                      <KeyRound className="w-4 h-4" />
+                    </button>
                     {/* Verwijderen */}
                     <button
                       onClick={() => setConfirmDelete(u.id)}
@@ -241,6 +270,33 @@ export function UsersSection() {
                     </button>
                   </div>
                 </div>
+                {/* Wachtwoord resetten */}
+                {resetPwUser === u.id && (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                    <p className="text-sm text-amber-800 shrink-0">Nieuw wachtwoord voor {u.email}:</p>
+                    <input
+                      type="text"
+                      value={newPw}
+                      onChange={(e) => setNewPw(e.target.value)}
+                      placeholder="Min. 8 tekens"
+                      className="flex-1 px-2 py-1 text-sm border border-amber-300 rounded"
+                    />
+                    <button
+                      onClick={() => handleResetPassword(u)}
+                      disabled={actionLoading === u.id}
+                      className="px-3 py-1 bg-amber-600 text-white text-xs rounded hover:bg-amber-700 disabled:opacity-50 inline-flex items-center gap-1"
+                    >
+                      {actionLoading === u.id && <Loader2 className="w-3 h-3 animate-spin" />}
+                      Instellen
+                    </button>
+                    <button
+                      onClick={() => setResetPwUser(null)}
+                      className="px-3 py-1 bg-white text-slate-600 text-xs rounded border border-slate-300 hover:bg-slate-50"
+                    >
+                      Annuleren
+                    </button>
+                  </div>
+                )}
                 {/* Bevestigingsdialoog voor verwijderen */}
                 {confirmDelete === u.id && (
                   <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-md px-3 py-2">
