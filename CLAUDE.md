@@ -36,7 +36,7 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 ## Services ([src/app/services](src/app/services))
 - `supabaseClient.ts` — init client uit `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`; `null` als config ontbreekt.
 - `supabaseService.ts` — profielen-CRUD + match_results. Publieke API: `isConfigured`, `getAllProfiles`, `getProfile`, `saveProfile`, `deleteProfile`, `saveBulkProfiles`, `syncProfiles`, `saveMatchResult`, `getMatchResults`. **Valt terug op localStorage** wanneer niet geconfigureerd (nooit crashen).
-- `authService.ts` — Supabase Auth: `signIn`, `signOut`, `getCurrentUser`, `isAdmin`, `onAuthChange`, `listUsers`, `inviteUser` (retourneert invite-link), `setUserRole`, `setPassword`. `inviteUser` gebruikt directe `fetch` naar de edge function (niet `supabase.functions.invoke`).
+- `authService.ts` — Supabase Auth: `signIn`, `signOut`, `getCurrentUser`, `isAdmin`, `onAuthChange`, `listUsers`, `inviteUser` (retourneert invite-link), `deleteUser`, `resendInvite`, `setUserRole`, `setPassword`. `inviteUser`/`deleteUser` gebruiken directe `fetch` naar de edge function (niet `supabase.functions.invoke`).
 - `reportService.ts` — `sendMatchReport` (via edge function `send-match-report`), `buildMatchReportHtml`.
 - `matchStatusService.ts` — `updateMatchStatus`, `MATCH_STATUSES`, `MATCH_STATUS_LABELS`.
 - `googleSheets.ts.bak` — **oude** backend, bewust als referentie bewaard (niet gebruiken).
@@ -50,7 +50,7 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 ## Admin ([src/app/admin](src/app/admin))
 - `AdminPage.tsx` — auth-gate (login / geen-rol / dashboard).
 - `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, Gebruikers.
-- `UsersSection.tsx` — gebruikers uitnodigen (toont kopieerbare invite-link) + rollen beheren.
+- `UsersSection.tsx` — volledige gebruikers-CRUD: uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), rollen wijzigen.
 - `InsightsSection.tsx` — AI-gesprekstarter: scrapet website + vergelijkt met gemeten profiel.
 - `ProfilesSection.tsx` — profielen CRUD (aanmaken, bewerken, verwijderen).
 - `AdminAccept.tsx` — invite afhandelen + wachtwoord instellen.
@@ -72,7 +72,7 @@ on conflict (user_id) do update set role = 'admin';
 ```
 
 Edge functions in [supabase/functions](supabase/functions):
-- `invite-user` — admin nodigt gebruiker uit via `generateLink` (stuurt géén mail; retourneert invite-link die de admin kopieert en deelt). `inviteUserByEmail` werkt niet betrouwbaar met Supabase Free + Brevo SMTP (lege error). **Deploy apart naar Supabase** (niet via Vercel!).
+- `invite-user` — gebruikersbeheer (admin-only). Ondersteunt `action: 'invite'` (default) en `action: 'delete'`. Invite gebruikt `generateLink` (stuurt géén mail; retourneert invite-link die de admin kopieert en deelt, 24u geldig). Delete verwijdert user uit Auth + `user_roles`, met zelf-verwijder-beveiliging. **Deploy apart naar Supabase** (niet via Vercel!).
 - `send-match-report` — mailt matchrapport via Brevo API. Secrets: `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`.
 - `culture-compare` — scrapet bedrijfswebsite (Firecrawl) + vergelijkt met gemeten profiel/gaps via Claude Sonnet → gesprekstarter. Secrets: `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`. (Admin-tab "Inzichten".)
 ```bash

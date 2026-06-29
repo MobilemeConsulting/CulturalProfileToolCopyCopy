@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Loader2, Check, Lock } from 'lucide-react';
-import { getCurrentUser, setPassword } from '../services/authService';
+import { supabase } from '../services/supabaseClient';
+import { setPassword } from '../services/authService';
 
-// Pagina voor het accepteren van een uitnodiging: de invite-link logt de
-// gebruiker in (Supabase verwerkt de tokens in de URL automatisch); hier kiest
-// de gebruiker een wachtwoord.
+// Pagina voor het accepteren van een uitnodiging: de invite-link redirectt
+// via Supabase Auth naar deze pagina met tokens in de URL-hash.
+// Supabase verwerkt de tokens automatisch → sessie wordt aangemaakt.
 export function AdminAccept() {
   const [checking, setChecking] = useState(true);
   const [hasSession, setHasSession] = useState(false);
@@ -13,15 +14,50 @@ export function AdminAccept() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
-    // Geef supabase-js even tijd om de sessie uit de URL-hash te lezen.
-    const t = setTimeout(async () => {
-      const user = await getCurrentUser();
-      setHasSession(!!user);
+    if (!supabase) {
       setChecking(false);
-    }, 600);
-    return () => clearTimeout(t);
+      setError('Supabase is niet geconfigureerd.');
+      return;
+    }
+
+    // Check of er een fout in de URL zit (bv. verlopen token)
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace('#', ''));
+    const urlError = params.get('error_description') || params.get('error');
+    if (urlError) {
+      setChecking(false);
+      setError(urlError);
+      setDebugInfo(`URL bevatte fout: ${urlError}`);
+      return;
+    }
+
+    // Luister naar auth-wijzigingen — Supabase pikt tokens automatisch op uit de URL-hash.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[AdminAccept] auth event:', event, session?.user?.email);
+      if (session?.user) {
+        setHasSession(true);
+        setChecking(false);
+      }
+    });
+
+    // Fallback: als na 3 seconden nog geen sessie, geef foutmelding.
+    const fallback = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setHasSession(true);
+      } else {
+        setDebugInfo(`Geen sessie na timeout. URL hash: ${hash ? 'aanwezig' : 'leeg'}`);
+      }
+      setChecking(false);
+    }, 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(fallback);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,9 +99,20 @@ export function AdminAccept() {
             <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
           </div>
         ) : !hasSession ? (
-          <p className="text-sm text-red-600 text-center">
-            Geen geldige uitnodiging gevonden. Open deze pagina via de link uit je uitnodigingsmail.
-          </p>
+          <div className="text-center space-y-3">
+            <p className="text-sm text-red-600">
+              {error || 'Geen geldige uitnodiging gevonden. Open deze pagina via de link uit je uitnodigingsmail.'}
+            </p>
+            <p className="text-xs text-slate-400">
+              Mogelijke oorzaken: de link is verlopen (24u geldig), al eerder gebruikt, of niet correct gekopieerd.
+            </p>
+            {debugInfo && (
+              <p className="text-xs text-slate-300 font-mono break-all">{debugInfo}</p>
+            )}
+            <a href="/admin" className="inline-block mt-4 text-sm text-slate-600 hover:text-slate-900 underline">
+              → Ga naar admin login
+            </a>
+          </div>
         ) : done ? (
           <p className="text-green-700 text-center flex items-center justify-center gap-2">
             <Check className="w-5 h-5" /> Wachtwoord ingesteld! Je wordt doorgestuurd...

@@ -81,9 +81,16 @@ Deno.serve(async (req) => {
     }
     const newRole = role === 'admin' ? 'admin' : 'user';
 
-    // Genereer invite-link (omzeilt SMTP — stuurt GEEN mail).
+    // Check of de gebruiker al bestaat (dan recovery i.p.v. invite).
+    const { data: existingUsers } = await admin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(
+      (u: any) => u.email?.toLowerCase() === email.toLowerCase()
+    );
+    const linkType = existingUser?.email_confirmed_at ? 'recovery' : 'invite';
+
+    // Genereer link (omzeilt SMTP — stuurt GEEN mail).
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-      type: 'invite',
+      type: linkType,
       email,
       options: { redirectTo },
     });
@@ -91,7 +98,7 @@ Deno.serve(async (req) => {
     if (linkError || !linkData?.user) {
       const msg = linkError?.message
         || (linkError ? JSON.stringify(linkError) : null)
-        || 'Invite-link genereren mislukt';
+        || 'Link genereren mislukt';
       return json({ error: msg }, 400);
     }
 
