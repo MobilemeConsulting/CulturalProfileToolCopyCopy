@@ -10,7 +10,9 @@ Tool om culturele organisaties en profit-bedrijven te profileren (CSROI-dimensie
 - **Tailwind 4**, Radix UI / shadcn-componenten (`src/app/components/ui`)
 - **react-router 7** (client-side routing)
 - **Supabase** als backend (database + Auth), met **localStorage-fallback**
-- **jspdf** voor PDF-export
+- **jspdf** voor PDF-export (gebrand matchrapport)
+- **xlsx** voor Excel-export (profielen + match-matrix + CRM-data)
+- **Recharts** voor radar charts (vergelijkingsview + matching)
 - **Brevo** als SMTP/transactional-mail provider (via Supabase Auth + edge function)
 
 ## Commando's
@@ -22,12 +24,13 @@ Er is geen lokale `tsc`; typecheck gebeurt via `npx vite build` (esbuild).
 
 ## Routes
 - `/` — de publieke tool ([src/app/App.tsx](src/app/App.tsx))
+- `/profiel/:id` — publieke, read-only profielpagina (deelbaar, geen login nodig)
 - `/admin` — admin-dashboard (echte Supabase-Auth + admin-rol vereist)
 - `/admin/accept` — invite-link afhandelen (wachtwoord instellen)
 
 ## Wachtwoorden / toegang
 - **Demo laden**: geen wachtwoord.
-- **Matching-tab**: hardcoded `aHHa$2026` ([PasswordProtection.tsx](src/app/components/PasswordProtection.tsx)).
+- **Matching-tab**: verwijderd uit publieke tool (nu alleen via /admin). `PasswordProtection.tsx` en `MatchingView.tsx` staan nog in de code voor eventuele re-activatie.
 - **/admin**: echte Supabase-Auth login + rol `admin` in `user_roles` (geen hardcoded wachtwoord).
 
 ## Datamodel
@@ -38,21 +41,23 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 - `supabaseService.ts` — profielen-CRUD + match_results. Publieke API: `isConfigured`, `getAllProfiles`, `getProfile`, `saveProfile`, `deleteProfile`, `saveBulkProfiles`, `syncProfiles`, `saveMatchResult`, `getMatchResults`. **Valt terug op localStorage** wanneer niet geconfigureerd (nooit crashen).
 - `authService.ts` — Supabase Auth: `signIn`, `signOut`, `getCurrentUser`, `isAdmin`, `onAuthChange`, `listUsers`, `inviteUser` (retourneert invite-link), `deleteUser`, `resendInvite`, `setUserRole`, `setPassword`. `inviteUser`/`deleteUser` gebruiken directe `fetch` naar de edge function (niet `supabase.functions.invoke`).
 - `reportService.ts` — `sendMatchReport` (via edge function `send-match-report`), `buildMatchReportHtml`.
-- `matchStatusService.ts` — `updateMatchStatus`, `MATCH_STATUSES`, `MATCH_STATUS_LABELS`.
+- `matchStatusService.ts` — `updateMatchStatus`, `updateMatchCRM`, `MATCH_STATUSES`, `MATCH_STATUS_LABELS`.
 - `googleSheets.ts.bak` — **oude** backend, bewust als referentie bewaard (niet gebruiken).
 
 ## Utils ([src/app/utils](src/app/utils))
 - `matching.ts` — gedeelde matchberekening: `computeMatch`, `calculateAxisMatch`, `getMatchLabel`. Match% = gemiddelde van `max(0, 100 - |c*20 - p*20|)` over 5 CSROI-dimensies.
 - `csroiCalculations.ts` — mapt 8 culturele dimensies → 5 CSROI-dimensies (0-5 schaal).
 - `adminStats.ts` — KPI's, match-matrix, CSROI-benchmark, perceptiekloof, datakwaliteit.
-- `pdfExport.ts` — `exportProfileToPdf`, `exportMatchReportToPdf`.
+- `pdfExport.ts` — `exportProfileToPdf`, `exportMatchReportToPdf` (gebrand, kleurgecodeerd, klantgericht).
+- `excelExport.ts` — `exportProfilesToExcel`, `exportMatchDataToExcel` (multi-sheet .xlsx met CRM-data).
 
 ## Admin ([src/app/admin](src/app/admin))
 - `AdminPage.tsx` — auth-gate (login / geen-rol / dashboard).
-- `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, Gebruikers.
-- `UsersSection.tsx` — volledige gebruikers-CRUD: uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), rollen wijzigen.
+- `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, Vergelijking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, Gebruikers. Responsive hamburger-menu op mobiel. Overzicht bevat Excel-export knoppen. Ranking heeft uitklapbare CRM per match + Excel-export.
+- `CompareSection.tsx` — vergelijkingsview: twee profielen naast elkaar met radar chart overlay (Recharts) + scoretabel per CSROI-dimensie.
+- `UsersSection.tsx` — volledige gebruikers-CRUD: uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), wachtwoord resetten, rollen wijzigen.
 - `InsightsSection.tsx` — AI-gesprekstarter: scrapet website + vergelijkt met gemeten profiel.
-- `ProfilesSection.tsx` — profielen CRUD (aanmaken, bewerken, verwijderen).
+- `ProfilesSection.tsx` — profielen CRUD (aanmaken, bewerken, verwijderen) + deelbare profiellink (share-knop).
 - `AdminAccept.tsx` — invite afhandelen + wachtwoord instellen.
 
 ## Supabase
@@ -63,6 +68,7 @@ Migraties in [supabase/migrations](supabase/migrations) (draai in volgorde via S
 4. `004_auth_rbac.sql` — `user_roles`, `is_admin()`, match_results admin-only. **Bevat bootstrap-SQL voor de eerste admin** (onderaan).
 5. `005_admin_users_rpc.sql` — `get_admin_users()` RPC.
 6. `006_match_status.sql` — `status`-kolom op match_results (mini-CRM).
+7. `007_match_crm_fields.sql` — CRM-uitbreiding: `notes`, `contact_name`, `contact_email`, `contact_phone`, `last_contact_at`, `next_contact_at`.
 
 **Eerste admin bootstrappen** (na user aanmaken in Auth → Users):
 ```sql
@@ -72,7 +78,7 @@ on conflict (user_id) do update set role = 'admin';
 ```
 
 Edge functions in [supabase/functions](supabase/functions):
-- `invite-user` — gebruikersbeheer (admin-only). Ondersteunt `action: 'invite'` (default) en `action: 'delete'`. Invite gebruikt `generateLink` (stuurt géén mail; retourneert invite-link die de admin kopieert en deelt, 24u geldig). Delete verwijdert user uit Auth + `user_roles`, met zelf-verwijder-beveiliging. **Deploy apart naar Supabase** (niet via Vercel!).
+- `invite-user` — gebruikersbeheer (admin-only). Ondersteunt `action: 'invite'` (default), `action: 'delete'`, en `action: 'reset-password'`. Invite gebruikt `generateLink` (recovery voor bestaande users, invite voor nieuwe); retourneert invite-link (24u geldig). Delete verwijdert user uit Auth + `user_roles`. Reset-password stelt wachtwoord direct in via Admin API. **Deploy apart naar Supabase** (niet via Vercel!).
 - `send-match-report` — mailt matchrapport via Brevo API. Secrets: `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`.
 - `culture-compare` — scrapet bedrijfswebsite (Firecrawl) + vergelijkt met gemeten profiel/gaps via Claude Sonnet → gesprekstarter. Secrets: `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`. (Admin-tab "Inzichten".)
 ```bash
