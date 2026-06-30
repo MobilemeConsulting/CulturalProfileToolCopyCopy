@@ -32,3 +32,20 @@ export async function updateMatchStatus(
 
   return { error: error ? error.message : null };
 }
+
+// Werkt CRM-velden van een match bij (notities, contactgegevens, datums).
+export async function updateMatchCRM(
+  id: string,
+  fields: {
+    notes?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    last_contact_at?: string | null;
+    next_contact_at?: string | null;
+  }
+): Promise<{ error: string | null }> {
+  if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
+  const { error } = await supabase.from('match_results').update(fields).eq('id', id);
+  return { error: error ? error.message : null };
+}

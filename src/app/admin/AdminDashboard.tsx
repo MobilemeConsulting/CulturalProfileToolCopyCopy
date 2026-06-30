@@ -36,11 +36,14 @@ import {
 import { UsersSection } from './UsersSection';
 import { ProfilesSection } from './ProfilesSection';
 import { InsightsSection } from './InsightsSection';
-import { FileDown, Mail, Database, Sparkles } from 'lucide-react';
+import { CompareSection } from './CompareSection';
+import { FileDown, Mail, Database, Sparkles, ChevronDown, ChevronUp, StickyNote, FileSpreadsheet, ArrowLeftRight } from 'lucide-react';
 import { exportMatchReportToPdf } from '../utils/pdfExport';
+import { exportProfilesToExcel, exportMatchDataToExcel } from '../utils/excelExport';
 import { sendMatchReport, buildMatchReportHtml } from '../services/reportService';
 import {
   updateMatchStatus,
+  updateMatchCRM,
   MATCH_STATUSES,
   MATCH_STATUS_LABELS,
   MatchStatus,
@@ -67,6 +70,7 @@ type Tab =
   | 'profiles'
   | 'matrix'
   | 'ranking'
+  | 'compare'
   | 'csroi'
   | 'gaps'
   | 'quality'
@@ -78,6 +82,7 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'profiles', label: 'Profielen', icon: Database },
   { id: 'matrix', label: 'Match-matrix', icon: Grid3x3 },
   { id: 'ranking', label: 'Ranking', icon: Trophy },
+  { id: 'compare', label: 'Vergelijking', icon: ArrowLeftRight },
   { id: 'csroi', label: 'CSROI-benchmark', icon: BarChart3 },
   { id: 'gaps', label: 'Perceptiekloof', icon: AlertTriangle },
   { id: 'quality', label: 'Datakwaliteit', icon: ClipboardCheck },
@@ -185,12 +190,13 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* Inhoud */}
       <main className="flex-1 min-w-0">
         <div className="max-w-5xl mx-auto px-6 py-8">
-          {tab === 'overview' && <OverviewSection profiles={profiles} savedCount={savedResults.length} />}
+          {tab === 'overview' && <OverviewSection profiles={profiles} savedCount={savedResults.length} savedResults={savedResults} />}
           {tab === 'profiles' && <ProfilesSection profiles={profiles} onChanged={loadProfiles} />}
           {tab === 'matrix' && <MatrixSection profiles={profiles} />}
           {tab === 'ranking' && (
             <RankingSection profiles={profiles} savedResults={savedResults} onSaved={refreshResults} />
           )}
+          {tab === 'compare' && <CompareSection profiles={profiles} />}
           {tab === 'csroi' && <CsroiSection profiles={profiles} />}
           {tab === 'gaps' && <GapsSection profiles={profiles} />}
           {tab === 'quality' && <QualitySection profiles={profiles} />}
@@ -206,9 +212,11 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
 function OverviewSection({
   profiles,
   savedCount,
+  savedResults,
 }: {
   profiles: OrganisationProfile[];
   savedCount: number;
+  savedResults: MatchResult[];
 }) {
   const kpis = useMemo(() => computeKpis(profiles), [profiles]);
 
@@ -229,6 +237,21 @@ function OverviewSection({
             <div className="text-xs text-slate-500 mt-1">{t.label}</div>
           </div>
         ))}
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          onClick={() => exportProfilesToExcel(profiles)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-all text-sm"
+        >
+          <FileSpreadsheet className="w-4 h-4" /> Profielen exporteren (Excel)
+        </button>
+        <button
+          onClick={() => exportMatchDataToExcel(profiles, savedResults)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-all text-sm"
+        >
+          <FileSpreadsheet className="w-4 h-4" /> Matches exporteren (Excel)
+        </button>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -437,27 +460,35 @@ function RankingSection({
         <Empty text="Geen tegenpartijen beschikbaar om tegen te ranken." />
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <h2 className="text-lg font-semibold text-slate-900">Ranking ({ranking.length})</h2>
-            <button
-              onClick={handleSaveAll}
-              disabled={saving}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-all disabled:opacity-60 text-sm"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Opslaan...
-                </>
-              ) : saved ? (
-                <>
-                  <Check className="w-4 h-4" /> Opgeslagen
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" /> Resultaten opslaan in Supabase
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => exportMatchDataToExcel(profiles, savedResults)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-all text-sm"
+              >
+                <FileSpreadsheet className="w-4 h-4" /> Excel export
+              </button>
+              <button
+                onClick={handleSaveAll}
+                disabled={saving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-all disabled:opacity-60 text-sm"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Opslaan...
+                  </>
+                ) : saved ? (
+                  <>
+                    <Check className="w-4 h-4" /> Opgeslagen
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" /> Resultaten opslaan in Supabase
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {ranking.map((r, idx) => (
@@ -509,38 +540,232 @@ function RankingSection({
       )}
 
       {savedResults.length > 0 && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900 mb-3">
-            Opgeslagen resultaten ({savedResults.length})
-          </h2>
-          <div className="space-y-2 max-h-80 overflow-auto">
-            {savedResults.map((res) => (
-              <div
-                key={res.id}
-                className="flex items-center justify-between text-sm border-b border-slate-100 pb-2 gap-3"
-              >
-                <span className="text-slate-700 flex-1 truncate">
-                  {profileName(res.cultural_id)} ↔ {profileName(res.profit_id)}
-                </span>
-                <select
-                  value={(res.status as MatchStatus) || 'nieuw'}
-                  onChange={(e) => handleStatus(res, e.target.value as MatchStatus)}
-                  className="text-xs border border-slate-300 rounded px-2 py-1"
-                >
-                  {MATCH_STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {MATCH_STATUS_LABELS[s]}
-                    </option>
-                  ))}
-                </select>
-                <span className={`font-semibold ${matchColor(res.match_score)}`}>
-                  {Math.round(res.match_score)}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <SavedResultsCRM
+          savedResults={savedResults}
+          profileName={profileName}
+          handleStatus={handleStatus}
+          onSaved={onSaved}
+        />
       )}
+    </div>
+  );
+}
+
+// --- Opgeslagen resultaten met CRM-velden ------------------------------------
+function SavedResultsCRM({
+  savedResults,
+  profileName,
+  handleStatus,
+  onSaved,
+}: {
+  savedResults: MatchResult[];
+  profileName: (id: string) => string;
+  handleStatus: (res: MatchResult, status: MatchStatus) => void;
+  onSaved: () => void;
+}) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [crmData, setCrmData] = useState<Record<string, {
+    notes: string;
+    contact_name: string;
+    contact_email: string;
+    contact_phone: string;
+    last_contact_at: string;
+    next_contact_at: string;
+  }>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  const toggleExpand = (id: string | undefined) => {
+    if (!id) return;
+    if (expandedId === id) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(id);
+      // Initialiseer CRM-data vanuit het matchresultaat als nog niet aanwezig
+      if (!crmData[id]) {
+        const res = savedResults.find((r) => r.id === id);
+        setCrmData((prev) => ({
+          ...prev,
+          [id]: {
+            notes: res?.notes || '',
+            contact_name: res?.contact_name || '',
+            contact_email: res?.contact_email || '',
+            contact_phone: res?.contact_phone || '',
+            last_contact_at: res?.last_contact_at || '',
+            next_contact_at: res?.next_contact_at || '',
+          },
+        }));
+      }
+    }
+  };
+
+  const updateField = (id: string, field: string, value: string) => {
+    setCrmData((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], [field]: value },
+    }));
+  };
+
+  const handleSaveCRM = async (id: string) => {
+    setSavingId(id);
+    setSavedId(null);
+    const fields = crmData[id];
+    const { error } = await updateMatchCRM(id, {
+      notes: fields.notes || undefined,
+      contact_name: fields.contact_name || undefined,
+      contact_email: fields.contact_email || undefined,
+      contact_phone: fields.contact_phone || undefined,
+      last_contact_at: fields.last_contact_at || null,
+      next_contact_at: fields.next_contact_at || null,
+    });
+    if (error) {
+      window.alert('Opslaan mislukt: ' + error);
+    } else {
+      setSavedId(id);
+      await onSaved();
+      setTimeout(() => setSavedId(null), 2500);
+    }
+    setSavingId(null);
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+      <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+        <StickyNote className="w-5 h-5 text-amber-600" />
+        Opgeslagen resultaten ({savedResults.length})
+      </h2>
+      <div className="space-y-1">
+        {savedResults.map((res) => {
+          const isExpanded = expandedId === res.id;
+          const fields = res.id ? crmData[res.id] : undefined;
+          return (
+            <div key={res.id} className="border border-slate-100 rounded-lg overflow-hidden">
+              {/* Klikbare rij */}
+              <div
+                onClick={() => toggleExpand(res.id)}
+                className="flex items-center justify-between text-sm px-3 py-2 gap-3 cursor-pointer hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {isExpanded ? (
+                    <ChevronUp className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  )}
+                  <span className="text-slate-700 truncate">
+                    {profileName(res.cultural_id)} ↔ {profileName(res.profit_id)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <select
+                    value={(res.status as MatchStatus) || 'nieuw'}
+                    onChange={(e) => handleStatus(res, e.target.value as MatchStatus)}
+                    className="text-xs border border-slate-300 rounded px-2 py-1"
+                  >
+                    {MATCH_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {MATCH_STATUS_LABELS[s]}
+                      </option>
+                    ))}
+                  </select>
+                  <span className={`font-semibold ${matchColor(res.match_score)}`}>
+                    {Math.round(res.match_score)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Uitgeklapt CRM-paneel */}
+              {isExpanded && res.id && fields && (
+                <div className="bg-amber-50 border-t border-amber-200 px-4 py-4 space-y-4">
+                  {/* Notities */}
+                  <div>
+                    <label className="block text-sm font-medium text-amber-900 mb-1">Notities</label>
+                    <textarea
+                      value={fields.notes}
+                      onChange={(e) => updateField(res.id!, 'notes', e.target.value)}
+                      rows={3}
+                      placeholder="Voeg notities toe over deze match..."
+                      className="w-full px-3 py-2 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 resize-y"
+                    />
+                  </div>
+
+                  {/* Contactgegevens grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-amber-900 mb-1">Contactpersoon</label>
+                      <input
+                        type="text"
+                        value={fields.contact_name}
+                        onChange={(e) => updateField(res.id!, 'contact_name', e.target.value)}
+                        placeholder="Naam"
+                        className="w-full px-3 py-1.5 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-amber-900 mb-1">E-mail</label>
+                      <input
+                        type="email"
+                        value={fields.contact_email}
+                        onChange={(e) => updateField(res.id!, 'contact_email', e.target.value)}
+                        placeholder="e-mail@voorbeeld.be"
+                        className="w-full px-3 py-1.5 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-amber-900 mb-1">Telefoon</label>
+                      <input
+                        type="tel"
+                        value={fields.contact_phone}
+                        onChange={(e) => updateField(res.id!, 'contact_phone', e.target.value)}
+                        placeholder="+32 ..."
+                        className="w-full px-3 py-1.5 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Datums */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-amber-900 mb-1">Laatst contact</label>
+                      <input
+                        type="date"
+                        value={fields.last_contact_at}
+                        onChange={(e) => updateField(res.id!, 'last_contact_at', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-amber-900 mb-1">Volgend contact</label>
+                      <input
+                        type="date"
+                        value={fields.next_contact_at}
+                        onChange={(e) => updateField(res.id!, 'next_contact_at', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-amber-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Opslaan */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => handleSaveCRM(res.id!)}
+                      disabled={savingId === res.id}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                      {savingId === res.id ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Opslaan...</>
+                      ) : savedId === res.id ? (
+                        <><Check className="w-4 h-4" /> Opgeslagen</>
+                      ) : (
+                        <><Save className="w-4 h-4" /> CRM opslaan</>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

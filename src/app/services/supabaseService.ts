@@ -243,6 +243,12 @@ export interface MatchResult {
   match_score: number;
   dimension_scores: unknown;
   status?: string;
+  notes?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  last_contact_at?: string;
+  next_contact_at?: string;
   created_at?: string;
 }
 

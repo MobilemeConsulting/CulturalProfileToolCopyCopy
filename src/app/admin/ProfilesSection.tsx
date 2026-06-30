@@ -7,6 +7,8 @@ import {
   Plus,
   ArrowLeft,
   Save,
+  Share2,
+  Check,
 } from 'lucide-react';
 import { OrganisationProfile } from '../data/types';
 import { saveProfile, deleteProfile } from '../services/supabaseService';
@@ -38,6 +40,19 @@ interface ProfilesSectionProps {
 export function ProfilesSection({ profiles, onChanged }: ProfilesSectionProps) {
   const [mode, setMode] = useState<Mode>({ kind: 'list' });
   const [typeFilter, setTypeFilter] = useState<'all' | 'cultural' | 'profit'>('all');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = async (profileId: string) => {
+    const url = `${window.location.origin}/profiel/${profileId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(profileId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Fallback
+      window.prompt('Kopieer deze link:', url);
+    }
+  };
 
   // Opslaan: naar Supabase én localStorage, daarna lijst verversen.
   const handleSave = async (profile: OrganisationProfile) => {
@@ -133,6 +148,17 @@ export function ProfilesSection({ profiles, onChanged }: ProfilesSectionProps) {
                   {p.dimensions.length} dimensies
                 </div>
               </div>
+              <button
+                onClick={() => handleCopyLink(p.id)}
+                title="Deelbare link kopiëren"
+                className="p-2 rounded-lg text-slate-600 hover:bg-slate-100"
+              >
+                {copiedId === p.id ? (
+                  <Check className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Share2 className="w-4 h-4" />
+                )}
+              </button>
               <button
                 onClick={() => setMode({ kind: 'edit', profile: p })}
                 title="Bewerken"
