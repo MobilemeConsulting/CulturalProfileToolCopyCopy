@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
-import { FileEdit, Eye, Link2, BarChart3, Info, Sparkles, Upload, Download, ExternalLink, TrendingUp, Users as UsersIcon } from 'lucide-react';
+import { FileEdit, Eye, BarChart3, Info, Sparkles, Upload, Download, ExternalLink, TrendingUp, Users as UsersIcon } from 'lucide-react';
 import { ExportButton } from './components/ExportButton';
-import { PasswordProtection } from './components/PasswordProtection';
+// PasswordProtection & MatchingView bewust behouden voor eventuele re-activatie.
+// import { PasswordProtection } from './components/PasswordProtection';
 import { CSROIDashboard } from './components/CSROIDashboard';
 import { getAllDemoProfiles } from './data/demoProfiles';
 import { OrganisationProfile } from './data/types';
@@ -18,7 +19,7 @@ import {
 } from './services/supabaseService';
 import { exportProfileToPdf } from './utils/pdfExport';
 import { ProfileOutput } from './components/ProfileOutput';
-import { MatchingView } from './components/MatchingView';
+// import { MatchingView } from './components/MatchingView';
 import { ProfileCreationWizard } from './components/ProfileCreationWizard';
 import { SavedProfilesManager } from './components/SavedProfilesManager';
 import { AhhaHeader } from './components/AhhaHeader';
@@ -64,23 +65,17 @@ export interface Profile {
 
 const STORAGE_KEY = 'cultural-profiles';
 
-const MATCHING_PASSWORD_KEY = 'matching-access-granted';
+// const MATCHING_PASSWORD_KEY = 'matching-access-granted';
 
 export default function App() {
   const [profiles, setProfiles] = useState<OrganisationProfile[]>([]);
   const [currentProfile, setCurrentProfile] = useState<OrganisationProfile | null>(null);
   const [activeTab, setActiveTab] = useState('select');
   const [showCreationWizard, setShowCreationWizard] = useState(false);
-  const [matchingUnlocked, setMatchingUnlocked] = useState(false);
+  // const [matchingUnlocked, setMatchingUnlocked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check if matching is already unlocked
-  useEffect(() => {
-    const accessGranted = sessionStorage.getItem(MATCHING_PASSWORD_KEY);
-    if (accessGranted === 'true') {
-      setMatchingUnlocked(true);
-    }
-  }, []);
+  // Matching unlock check verwijderd — matching nu via /admin
 
   // Load profiles from localStorage
   useEffect(() => {
@@ -161,13 +156,15 @@ export default function App() {
     setActiveTab('view');
   };
 
-  const handleMatchingUnlock = () => {
-    setMatchingUnlocked(true);
-    sessionStorage.setItem(MATCHING_PASSWORD_KEY, 'true');
-    toast.success('Toegang verleend!', {
-      description: 'Je hebt nu toegang tot de matching functionaliteit',
-    });
-  };
+  // Matching-tab verwijderd uit publieke tool — nu alleen via /admin.
+  // Onderstaande code bewust als commentaar voor eventuele re-activatie:
+  // const handleMatchingUnlock = () => {
+  //   setMatchingUnlocked(true);
+  //   sessionStorage.setItem(MATCHING_PASSWORD_KEY, 'true');
+  //   toast.success('Toegang verleend!', {
+  //     description: 'Je hebt nu toegang tot de matching functionaliteit',
+  //   });
+  // };
 
   const loadProfile = (profile: OrganisationProfile) => {
     setCurrentProfile(profile);
@@ -208,7 +205,7 @@ export default function App() {
       setCurrentProfile(culturalDemo);
     }
     setShowCreationWizard(false);
-    setActiveTab('matching');
+    setActiveTab('select');
     toast.success('Demo profielen geladen!', {
       description: 'Interparking, Baloise, KBC, Compagnie Cecilia en Ha Concerts beschikbaar',
     });
@@ -322,7 +319,7 @@ export default function App() {
           />
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-3 mb-8">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-2 mb-8">
               <TabsTrigger value="select" className="flex items-center gap-2">
                 <FileEdit className="w-4 h-4" />
                 Start
@@ -330,10 +327,6 @@ export default function App() {
               <TabsTrigger value="view" className="flex items-center gap-2" disabled={!currentProfile}>
                 <Eye className="w-4 h-4" />
                 Overzicht
-              </TabsTrigger>
-              <TabsTrigger value="matching" className="flex items-center gap-2">
-                <Link2 className="w-4 h-4" />
-                Matching
               </TabsTrigger>
             </TabsList>
 
@@ -527,13 +520,7 @@ export default function App() {
             )}
           </TabsContent>
 
-            <TabsContent value="matching">
-              {matchingUnlocked ? (
-                <MatchingView profiles={profiles} />
-              ) : (
-                <PasswordProtection onUnlock={handleMatchingUnlock} />
-              )}
-            </TabsContent>
+            {/* Matching-tab verwijderd — beschikbaar via /admin dashboard */}
           </Tabs>
         )}
       </div>
