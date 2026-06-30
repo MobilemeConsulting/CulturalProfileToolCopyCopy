@@ -13,10 +13,7 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
   const [orgType, setOrgType] = useState('');
   const [crossoverFocus, setCrossoverFocus] = useState<'gemeenschap' | 'innovatie' | 'onderwijs'>('gemeenschap');
 
-  // Scores opslaan
-  const [scores, setScores] = useState<{[key: string]: number}>({});
-  const [descriptions, setDescriptions] = useState<{[key: string]: string}>({});
-
+  // Scores opslaan — initialiseer met 50 zodat niet-aangeraakte sliders ook geldig zijn
   const culturalDimensions = [
     {
       id: 'artistic',
@@ -61,6 +58,12 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       ]
     }
   ];
+
+  const defaultScores: {[key: string]: number} = {};
+  culturalDimensions.forEach(d => d.axes.forEach(a => { defaultScores[a.id] = 50; }));
+
+  const [scores, setScores] = useState<{[key: string]: number}>(defaultScores);
+  const [descriptions, setDescriptions] = useState<{[key: string]: string}>({});
 
   const totalSteps = 1 + culturalDimensions.length; // Meta info + dimensies
 

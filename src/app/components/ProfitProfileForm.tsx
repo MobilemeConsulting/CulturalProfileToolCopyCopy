@@ -16,14 +16,6 @@ export const ProfitProfileForm: React.FC<ProfitProfileFormProps> = ({ onComplete
   const [orgType, setOrgType] = useState('');
   const [industry, setIndustry] = useState('');
 
-  // Leadership scores (60% weging)
-  const [leadershipScores, setLeadershipScores] = useState<{[key: string]: number}>({});
-  const [leadershipDescriptions, setLeadershipDescriptions] = useState<{[key: string]: string}>({});
-
-  // Staff scores (40% weging)
-  const [staffScores, setStaffScores] = useState<{[key: string]: number}>({});
-  const [staffDescriptions, setStaffDescriptions] = useState<{[key: string]: string}>({});
-
   const profitDimensions = [
     {
       id: 'innovation',
@@ -77,6 +69,17 @@ export const ProfitProfileForm: React.FC<ProfitProfileFormProps> = ({ onComplete
       ]
     }
   ];
+
+  const defaultProfitScores: {[key: string]: number} = {};
+  profitDimensions.forEach(d => d.axes.forEach(a => { defaultProfitScores[a.id] = 50; }));
+
+  // Leadership scores (60% weging)
+  const [leadershipScores, setLeadershipScores] = useState<{[key: string]: number}>(defaultProfitScores);
+  const [leadershipDescriptions, setLeadershipDescriptions] = useState<{[key: string]: string}>({});
+
+  // Staff scores (40% weging)
+  const [staffScores, setStaffScores] = useState<{[key: string]: number}>(defaultProfitScores);
+  const [staffDescriptions, setStaffDescriptions] = useState<{[key: string]: string}>({});
 
   const totalDimensionSteps = profitDimensions.length;
 
