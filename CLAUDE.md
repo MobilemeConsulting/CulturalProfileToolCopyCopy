@@ -113,6 +113,9 @@ VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
 ```
 
+## Bekende design-keuzes
+- **Slider-scores initialisatie**: `CulturalProfileForm.tsx` en `ProfitProfileForm.tsx` initialiseren alle slider-scores op 50 (de visuele default). Dit voorkomt dat niet-aangeraakte sliders als "niet ingevuld" worden gezien bij validatie. Verwijder deze initialisatie NIET.
+
 ## Niet aanraken (protected)
 - `src/app/components/figma/ImageWithFallback.tsx`
 - `pnpm-lock.yaml`
