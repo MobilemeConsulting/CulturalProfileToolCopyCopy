@@ -7,7 +7,6 @@ import { ExportButton } from './components/ExportButton';
 // PasswordProtection & MatchingView bewust behouden voor eventuele re-activatie.
 // import { PasswordProtection } from './components/PasswordProtection';
 import { CSROIDashboard } from './components/CSROIDashboard';
-import { getAllDemoProfiles } from './data/demoProfiles';
 import { OrganisationProfile } from './data/types';
 import { migrateAllProfiles } from './utils/migrateProfiles';
 import {
@@ -90,13 +89,6 @@ export default function App() {
       } catch (error) {
         console.error('Error loading profiles:', error);
       }
-    } else {
-      // Auto-load demo profiles if no saved profiles exist
-      const demos = getAllDemoProfiles();
-      setProfiles(demos);
-      toast.info('Demo profielen automatisch geladen', {
-        description: 'Verken Interparking, Baloise, KBC, Refibo, Compagnie Cecilia en Ha Concerts',
-      });
     }
   }, []);
 
@@ -190,26 +182,6 @@ export default function App() {
     toast.success('Profiel verwijderd');
   };
 
-  const loadDemoProfiles = () => {
-    const demos = getAllDemoProfiles();
-    setProfiles((prev) => {
-      // Remove old demo profiles
-      const filtered = prev.filter(p => 
-        !p.id.startsWith('demo-')
-      );
-      return [...filtered, ...demos];
-    });
-    // Load the first demo profile (Ha Concerts) for immediate viewing
-    const culturalDemo = demos.find(p => p.organisationType === 'cultural');
-    if (culturalDemo) {
-      setCurrentProfile(culturalDemo);
-    }
-    setShowCreationWizard(false);
-    setActiveTab('select');
-    toast.success('Demo profielen geladen!', {
-      description: 'Interparking, Baloise, KBC, Compagnie Cecilia en Ha Concerts beschikbaar',
-    });
-  };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -272,13 +244,6 @@ export default function App() {
           </div>
           
           <div className="flex gap-4 justify-center flex-wrap items-center mt-12">
-            <button
-              onClick={loadDemoProfiles}
-              className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white hover:bg-teal-700 transition-all"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span className="font-medium">Demo Laden</span>
-            </button>
             <input
               ref={fileInputRef}
               type="file"

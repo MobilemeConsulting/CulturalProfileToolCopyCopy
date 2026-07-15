@@ -1,8 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Building2, TrendingUp, Trash2, Eye, Calendar, Sparkles } from 'lucide-react';
+import { Building2, TrendingUp, Trash2, Eye, Calendar } from 'lucide-react';
 import type { Profile } from '../App';
-import { getAllDemoProfiles } from '../data/demoProfiles';
 
 interface SavedProfilesManagerProps {
   profiles: Profile[];
@@ -11,70 +10,13 @@ interface SavedProfilesManagerProps {
 }
 
 export function SavedProfilesManager({ profiles, onLoad, onDelete }: SavedProfilesManagerProps) {
-  const demoProfiles = getAllDemoProfiles();
   const userProfiles = profiles.filter(p => !p.id.startsWith('demo-'));
-  
+
   const culturalProfiles = userProfiles.filter(p => p.organisationType === 'cultural');
   const profitProfiles = userProfiles.filter(p => p.organisationType === 'profit');
 
-  const demoCulturalProfiles = demoProfiles.filter(p => p.organisationType === 'cultural');
-  const demoProfitProfiles = demoProfiles.filter(p => p.organisationType === 'profit');
-
   return (
     <div className="space-y-8">
-      {/* Demo Profiles Section */}
-      <Card className="shadow-xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-yellow-50">
-        <CardHeader className="bg-gradient-to-r from-amber-100 to-yellow-100">
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-amber-600" />
-            Demo Profielen - Klik om te verkennen
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {demoProfiles.map((profile) => (
-              <Card key={profile.id} className="border-2 border-amber-200 hover:shadow-xl transition-all hover:scale-105">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="w-4 h-4 text-amber-600" />
-                        <Badge className="bg-amber-100 text-amber-800 text-xs">
-                          DEMO
-                        </Badge>
-                      </div>
-                      <h4 className="font-bold text-slate-900 mb-1">
-                        {profile.meta.orgName}
-                      </h4>
-                      <p className="text-sm text-slate-600">
-                        {profile.meta.orgType}
-                      </p>
-                    </div>
-                    <Badge className={profile.organisationType === 'cultural' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}>
-                      {profile.organisationType === 'cultural' ? 'Cultureel' : 'Profit'}
-                    </Badge>
-                  </div>
-                  
-                  {profile.meta.crossoverFocus && (
-                    <div className="text-xs text-slate-500 mb-3">
-                      Focus: <span className="font-semibold capitalize">{profile.meta.crossoverFocus}</span>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => onLoad(profile)}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg hover:from-amber-600 hover:to-yellow-600 transition-all shadow-md text-sm font-medium"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Demo Laden
-                  </button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* User Profiles Section */}
       {userProfiles.length === 0 ? (
         <Card className="shadow-lg">
