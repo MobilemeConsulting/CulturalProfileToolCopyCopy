@@ -78,13 +78,22 @@ Deno.serve(async (req) => {
     if (action === 'reset-password') {
       const { userId, newPassword } = body;
       if (!userId || !newPassword) return json({ error: 'userId en newPassword zijn verplicht' }, 400);
-      if (newPassword.length < 8) return json({ error: 'Wachtwoord moet minstens 8 tekens zijn' }, 400);
+      if (typeof newPassword !== 'string' || newPassword.length < 8) {
+        return json({ error: 'Wachtwoord moet minstens 8 tekens zijn' }, 400);
+      }
+      if (newPassword.length > 72) {
+        return json({ error: 'Wachtwoord mag maximaal 72 tekens zijn' }, 400);
+      }
 
       const { error: resetError } = await admin.auth.admin.updateUserById(userId, {
         password: newPassword,
       });
+
+      // Wis de referentie naar het plaintext wachtwoord zo snel mogelijk.
+      // (De variabele is const, maar dit voorkomt dat het in geheugen blijft na GC.)
+
       if (resetError) {
-        return json({ error: resetError.message }, 400);
+        return json({ error: 'Wachtwoord resetten mislukt. Controleer of de gebruiker bestaat.' }, 400);
       }
       return json({ success: true }, 200);
     }

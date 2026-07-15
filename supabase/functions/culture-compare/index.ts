@@ -76,6 +76,33 @@ Deno.serve(async (req) => {
 
     if (!websiteUrl) return json({ error: 'Website-URL ontbreekt' }, 400);
 
+    // Valideer URL-schema: alleen http(s) toestaan (voorkom SSRF naar interne netwerken).
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(websiteUrl);
+    } catch {
+      return json({ error: 'Ongeldige URL' }, 400);
+    }
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return json({ error: 'Alleen http en https URLs zijn toegestaan' }, 400);
+    }
+    // Blokkeer private/interne IP-bereiken en localhost
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname === '0.0.0.0' ||
+      hostname.endsWith('.local') ||
+      hostname.endsWith('.internal') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('192.168.') ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+      hostname.startsWith('169.254.')
+    ) {
+      return json({ error: 'Interne of lokale URLs zijn niet toegestaan' }, 400);
+    }
+
     // 3. Scrape de website via Firecrawl.
     const fcResp = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',

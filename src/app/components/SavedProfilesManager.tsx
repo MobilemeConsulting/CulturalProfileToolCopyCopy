@@ -24,7 +24,7 @@ export function SavedProfilesManager({ profiles, onLoad, onDelete }: SavedProfil
             <div className="text-slate-400 mb-4">
               <Building2 className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg">Nog geen opgeslagen profielen</p>
-              <p className="text-sm">Start met het maken van een nieuw profiel hierboven, of probeer een demo!</p>
+              <p className="text-sm">Start met het maken van een nieuw profiel hierboven.</p>
             </div>
           </CardContent>
         </Card>
