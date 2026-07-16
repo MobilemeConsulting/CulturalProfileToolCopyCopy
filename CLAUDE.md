@@ -56,7 +56,7 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 - `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, Vergelijking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, Gebruikers. Responsive hamburger-menu op mobiel. Overzicht bevat Excel-export knoppen. Ranking heeft uitklapbare CRM per match + Excel-export.
 - `CompareSection.tsx` — vergelijkingsview: twee profielen naast elkaar met radar chart overlay (Recharts) + scoretabel per CSROI-dimensie.
 - `UsersSection.tsx` — volledige gebruikers-CRUD: uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), wachtwoord resetten, rollen wijzigen.
-- `InsightsSection.tsx` — AI-gesprekstarter: scrapet website + vergelijkt met gemeten profiel.
+- `InsightsSection.tsx` — AI-gesprekstarter: zoekt automatisch website, jaarverslagen en CSR-rapporten op (Firecrawl search) en vergelijkt beweerde cultuur met gemeten profiel + perceptiekloof. Website-URL is optioneel (wordt automatisch gezocht op basis van organisatienaam). Toont gevonden bronnen en apart CSR-inzichten blok.
 - `ProfilesSection.tsx` — profielen CRUD (aanmaken, bewerken, verwijderen) + deelbare profiellink (share-knop).
 - `AdminAccept.tsx` — invite afhandelen + wachtwoord instellen.
 
@@ -80,7 +80,7 @@ on conflict (user_id) do update set role = 'admin';
 Edge functions in [supabase/functions](supabase/functions):
 - `invite-user` — gebruikersbeheer (admin-only). Ondersteunt `action: 'invite'` (default), `action: 'delete'`, en `action: 'reset-password'`. Invite gebruikt `generateLink` (recovery voor bestaande users, invite voor nieuwe); retourneert invite-link (24u geldig). Delete verwijdert user uit Auth + `user_roles`. Reset-password stelt wachtwoord direct in via Admin API. **Deploy apart naar Supabase** (niet via Vercel!).
 - `send-match-report` — mailt matchrapport via Brevo API. Secrets: `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`.
-- `culture-compare` — scrapet bedrijfswebsite (Firecrawl) + vergelijkt met gemeten profiel/gaps via Claude Sonnet → gesprekstarter. Secrets: `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`. (Admin-tab "Inzichten".)
+- `culture-compare` — zoekt automatisch website + jaarverslagen + CSR-rapporten (Firecrawl search), scrapet de inhoud, en vergelijkt beweerde cultuur met gemeten profiel/gaps via Claude Sonnet → gesprekstarter met CSR-inzichten. Website-URL is optioneel in de payload (wordt automatisch gezocht). Secrets: `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`. (Admin-tab "Inzichten".)
 ```bash
 supabase functions deploy invite-user --project-ref nzerixyxmsrcpdqnqytl
 supabase functions deploy send-match-report --project-ref nzerixyxmsrcpdqnqytl
@@ -115,6 +115,7 @@ VITE_SUPABASE_ANON_KEY=...
 
 ## Bekende design-keuzes
 - **Slider-scores initialisatie**: `CulturalProfileForm.tsx` en `ProfitProfileForm.tsx` initialiseren alle slider-scores op 50 (de visuele default). Dit voorkomt dat niet-aangeraakte sliders als "niet ingevuld" worden gezien bij validatie. Verwijder deze initialisatie NIET.
+- **Slider-helpteksten**: Elke bipolaire slider legt expliciet uit wat links en rechts betekent. Enkelvoudige scores vermelden wat laag vs. hoog inhoudt. Dit is bewust zo uitgebreid op basis van gebruikersfeedback.
 
 ## Niet aanraken (protected)
 - `src/app/components/figma/ImageWithFallback.tsx`
