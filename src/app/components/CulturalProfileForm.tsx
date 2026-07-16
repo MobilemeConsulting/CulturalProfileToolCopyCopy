@@ -20,8 +20,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Artistieke Positie',
       description: 'Hoe positioneert uw organisatie zich artistiek?',
       axes: [
-        { id: 'experimental_vs_traditioneel', label: 'Innovatief ↔ Conservatief', helpText: 'Experimenteert u met nieuwe vormen of richt u zich op klassieke tradities?' },
-        { id: 'niche_vs_breed', label: 'Gespecialiseerd ↔ Breed bereik', helpText: 'Focus op een specifieke niche of breed aanbod?' }
+        { id: 'experimental_vs_traditioneel', label: 'Innovatief ↔ Conservatief', helpText: 'Zoekt uw organisatie actief naar nieuwe artistieke vormen en experimenten (links), of bouwt u verder op beproefde klassieke tradities (rechts)?' },
+        { id: 'niche_vs_breed', label: 'Gespecialiseerd ↔ Breed bereik', helpText: 'Richt uw programmatie zich op een specifiek genre of discipline (links), of biedt u een breed en gevarieerd aanbod aan (rechts)?' }
       ]
     },
     {
@@ -29,9 +29,9 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Publiek & Gemeenschap',
       description: 'Wie bereikt u en hoe?',
       axes: [
-        { id: 'lokaal_vs_internationaal', label: 'Lokaal ↔ Internationaal', helpText: 'Is uw publiek vooral lokaal/regionaal of internationaal?' },
-        { id: 'participatief_vs_presentatie', label: 'Participatief ↔ Presentatie', helpText: 'Betrokkenheid van publiek vs. presenteren van werk?' },
-        { id: 'elite_vs_toegankelijk', label: 'Elite ↔ Toegankelijk', helpText: 'Richt u zich op kenners of breed publiek?' }
+        { id: 'lokaal_vs_internationaal', label: 'Lokaal ↔ Internationaal', helpText: 'Komt uw publiek vooral uit de eigen regio of gemeente (links), of trekt u bezoekers aan van buiten de regio of uit het buitenland (rechts)?' },
+        { id: 'participatief_vs_presentatie', label: 'Participatief ↔ Presentatie', helpText: 'Neemt uw publiek actief deel aan het creatieve proces, bv. via workshops of co-creatie (links), of zijn ze vooral toeschouwer bij voorstellingen en tentoonstellingen (rechts)?' },
+        { id: 'elite_vs_toegankelijk', label: 'Kenners ↔ Breed publiek', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis (links), of mikt u op een zo breed en divers mogelijk publiek (rechts)?' }
       ]
     },
     {
@@ -39,13 +39,13 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Organisatie & Werking',
       description: 'Hoe werkt uw organisatie intern?',
       axes: [
-        { id: 'agile_vs_stable', label: 'Agile & flexibel ↔ Stabiel & gestructureerd', helpText: 'Hoe flexibel vs. gestructureerd is uw organisatie?' },
-        { id: 'digital_vs_analog', label: 'Digitaal ↔ Analoog', helpText: 'Digitale transformatie vs. traditionele werkwijze?' },
-        { id: 'learning_score', label: 'Leren & Ontwikkeling', helpText: 'Hoeveel investeert u in training en ontwikkeling?' },
-        { id: 'collaboration_score', label: 'Samenwerking & Cultuur', helpText: 'Hoe samenwerkingsgericht is uw team?' },
-        { id: 'autonomy_score', label: 'Autonomie & Empowerment', helpText: 'Hoeveel autonomie hebben medewerkers?' },
-        { id: 'hierarchy_score', label: 'Hiërarchie & Besluitvorming', helpText: 'Platte structuur of hiërarchisch?' },
-        { id: 'communication_score', label: 'Communicatie Openheid', helpText: 'Hoe transparant en open is de communicatie?' }
+        { id: 'agile_vs_stable', label: 'Flexibel ↔ Gestructureerd', helpText: 'Past uw organisatie zich snel aan veranderende omstandigheden aan met weinig vaste procedures (links), of werkt u met duidelijke structuren, planningen en processen (rechts)?' },
+        { id: 'digital_vs_analog', label: 'Digitaal ↔ Fysiek/traditioneel', helpText: 'Zet uw organisatie sterk in op digitale tools, online communicatie en digitale producten (links), of werkt u vooral via fysieke ontmoetingen en traditionele werkwijzen (rechts)?' },
+        { id: 'learning_score', label: 'Leren & Ontwikkeling', helpText: 'In welke mate investeert uw organisatie in opleiding, bijscholing en professionele groei van medewerkers en vrijwilligers? Laag (links) = weinig formele leermomenten, hoog (rechts) = actief opleidingsbeleid.' },
+        { id: 'collaboration_score', label: 'Samenwerking & Teamcultuur', helpText: 'Hoe sterk werken teams samen over afdelingen of disciplines heen? Laag (links) = ieder werkt vooral zelfstandig, hoog (rechts) = er wordt actief samengewerkt en kennis gedeeld.' },
+        { id: 'autonomy_score', label: 'Autonomie & Eigenaarschap', helpText: 'Hoeveel ruimte krijgen medewerkers om zelf beslissingen te nemen binnen hun takenpakket? Laag (links) = beslissingen worden centraal genomen, hoog (rechts) = medewerkers hebben veel eigen verantwoordelijkheid.' },
+        { id: 'hierarchy_score', label: 'Plat ↔ Hiërarchisch', helpText: 'Is de besluitvorming breed gedragen met korte lijnen (links), of verloopt ze via duidelijke hiërarchische lagen en goedkeuringsprocedures (rechts)?' },
+        { id: 'communication_score', label: 'Interne openheid & transparantie', helpText: 'Hoe open wordt er intern gecommuniceerd over strategie, financiën en beslissingen? Laag (links) = informatie wordt beperkt gedeeld, hoog (rechts) = er is een cultuur van openheid en transparantie naar het hele team.' }
       ]
     },
     {
@@ -53,8 +53,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Culturele Identiteit',
       description: 'Wat is de identiteit van uw organisatie?',
       axes: [
-        { id: 'roots_vs_hybride', label: 'Traditionele waarden ↔ Adaptief', helpText: 'Traditioneel vs. adaptief en vernieuwend?' },
-        { id: 'erfgoed_vs_future', label: 'Erfgoed ↔ Toekomstgericht', helpText: 'Focus op erfgoed of op de toekomst?' }
+        { id: 'roots_vs_hybride', label: 'Traditie ↔ Vernieuwing', helpText: 'Bouwt uw organisatie verder op gevestigde culturele tradities en waarden (links), of zoekt u bewust naar vernieuwing, kruisbestuiving en hybride vormen (rechts)?' },
+        { id: 'erfgoed_vs_future', label: 'Erfgoed ↔ Toekomstgericht', helpText: 'Ligt de focus op het bewaren en doorgeven van cultureel erfgoed (links), of op het verkennen van nieuwe mogelijkheden en toekomstvisie (rechts)?' }
       ]
     }
   ];

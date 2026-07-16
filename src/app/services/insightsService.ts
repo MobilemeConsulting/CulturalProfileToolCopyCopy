@@ -21,7 +21,7 @@ export interface GapSummary {
 
 export interface ConversationStarterArgs {
   orgName: string;
-  websiteUrl: string;
+  websiteUrl: string; // kan leeg zijn — edge function zoekt dan automatisch
   dimensions: DimensionSummary[];
   gaps: GapSummary[];
 }
@@ -33,12 +33,13 @@ export interface ConversationStarterResult {
   aansluiting: string[];
   afwijking: string[];
   directieTeam: string[];
+  csrInzichten: string[];
   gesprekstarters: string[];
 }
 
 export async function generateConversationStarter(
   args: ConversationStarterArgs
-): Promise<{ structured: ConversationStarterResult | null; raw: string; error: string | null }> {
+): Promise<{ structured: ConversationStarterResult | null; raw: string; error: string | null; resolvedUrl?: string; extraSources?: string[] }> {
   if (!supabase) return { structured: null, raw: '', error: 'Supabase is niet geconfigureerd.' };
   try {
     const { data, error } = await supabase.functions.invoke('culture-compare', { body: args });
@@ -62,6 +63,8 @@ export async function generateConversationStarter(
       structured: (data?.structured ?? null) as ConversationStarterResult | null,
       raw: data?.raw ?? '',
       error: null,
+      resolvedUrl: data?.resolvedUrl,
+      extraSources: data?.extraSources,
     };
   } catch (e) {
     return {

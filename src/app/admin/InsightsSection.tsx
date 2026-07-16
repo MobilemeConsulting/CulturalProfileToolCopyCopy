@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Loader2, Globe, Copy, Check } from 'lucide-react';
+import { Sparkles, Loader2, Globe, Copy, Check, Search, FileText, ExternalLink } from 'lucide-react';
 import { OrganisationProfile } from '../data/types';
 import { perceptionGaps } from '../utils/adminStats';
 import {
@@ -17,6 +17,7 @@ function resultToText(r: ConversationStarterResult): string {
     block('AANSLUITING', r.aansluiting),
     block('AFWIJKING', r.afwijking),
     block('DIRECTIE vs TEAM', r.directieTeam),
+    block('CSR / JAARVERSLAGEN', r.csrInzichten ?? []),
     block('GESPREKSTARTERS', r.gesprekstarters),
   ]
     .filter(Boolean)
@@ -31,15 +32,19 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
   const [raw, setRaw] = useState('');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState('');
+  const [extraSources, setExtraSources] = useState<string[]>([]);
 
   const profile = profiles.find((p) => p.id === selectedId) || null;
 
   const handleGenerate = async () => {
-    if (!profile || !websiteUrl.trim()) return;
+    if (!profile) return;
     setLoading(true);
     setError('');
     setResult(null);
     setRaw('');
+    setResolvedUrl('');
+    setExtraSources([]);
 
     try {
       const gaps = perceptionGaps([profile])[0]?.gaps ?? [];
@@ -64,6 +69,8 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
       else {
         setResult(res.structured);
         setRaw(res.raw);
+        if (res.resolvedUrl) setResolvedUrl(res.resolvedUrl);
+        if (res.extraSources?.length) setExtraSources(res.extraSources);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Onbekende fout.');
@@ -87,8 +94,9 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Gesprekstarter genereren</h2>
             <p className="text-sm text-slate-500">
-              Vergelijkt de <strong>beweerde</strong> cultuur (website) met het{' '}
-              <strong>gemeten</strong> profiel en de directie/team-verschillen.
+              Zoekt automatisch de website, jaarverslagen en CSR-rapporten op, en vergelijkt
+              de <strong>beweerde</strong> cultuur met het <strong>gemeten</strong> profiel
+              en de directie/team-verschillen.
             </p>
           </div>
         </div>
@@ -109,28 +117,38 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Website-URL</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Website-URL <span className="text-slate-400 font-normal">(optioneel — wordt automatisch gezocht)</span>
+            </label>
             <div className="relative">
               <Globe className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="url"
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
-                placeholder="https://www.bedrijf.be"
+                placeholder="Laat leeg om automatisch te zoeken"
                 className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
               />
             </div>
           </div>
         </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading || !profile || !websiteUrl.trim()}
-          className="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {loading ? 'Analyseren...' : 'Genereer gesprekstarter'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !profile}
+            className="inline-flex items-center gap-2 px-5 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {loading ? 'Analyseren...' : 'Genereer gesprekstarter'}
+          </button>
+          {!websiteUrl.trim() && (
+            <span className="text-xs text-slate-500 flex items-center gap-1">
+              <Search className="w-3 h-3" />
+              Zoekt automatisch website, jaarverslagen &amp; CSR-rapporten
+            </span>
+          )}
+        </div>
 
         {error && <div className="text-sm bg-red-50 text-red-700 rounded-md px-3 py-2">✗ {error}</div>}
       </div>
@@ -148,6 +166,33 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
             </button>
           </div>
 
+          {(resolvedUrl || extraSources.length > 0) && (
+            <div className="text-xs text-slate-500 space-y-1 bg-slate-50 rounded-md px-3 py-2">
+              {resolvedUrl && (
+                <div className="flex items-center gap-1">
+                  <Globe className="w-3 h-3" />
+                  <span>Website:</span>
+                  <a href={resolvedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-0.5">
+                    {resolvedUrl} <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+              {extraSources.length > 0 && (
+                <div className="flex items-start gap-1">
+                  <FileText className="w-3 h-3 mt-0.5" />
+                  <div>
+                    <span>Extra bronnen gevonden:</span>
+                    {extraSources.map((src, i) => (
+                      <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="block text-blue-600 hover:underline">
+                        {src}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {result ? (
             <div className="space-y-5">
               <TextBlock title="Missie" text={result.missie} />
@@ -157,6 +202,9 @@ export function InsightsSection({ profiles }: { profiles: OrganisationProfile[] 
               <ListBlock title="Afwijking" items={result.afwijking} accent="orange" />
               {result.directieTeam.length > 0 && (
                 <ListBlock title="Directie vs team" items={result.directieTeam} accent="blue" />
+              )}
+              {(result.csrInzichten ?? []).length > 0 && (
+                <ListBlock title="CSR / Jaarverslagen" items={result.csrInzichten} accent="green" />
               )}
               <ListBlock title="Gesprekstarters" items={result.gesprekstarters} accent="purple" />
             </div>
