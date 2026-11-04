@@ -1,6 +1,6 @@
 -- ============================================================================
 -- AHHA Cultural Matching Tool - Rollen uitbreiden + is_staff()
--- Migratie: 008_roles_extend
+-- Migratie: 009_roles_extend
 -- ============================================================================
 --
 -- Breidt het rollensysteem uit van (admin | user) naar:

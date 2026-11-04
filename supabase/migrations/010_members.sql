@@ -1,6 +1,6 @@
 -- ============================================================================
 -- AHHA Cultural Matching Tool - Ledenregister
--- Migratie: 009_members
+-- Migratie: 010_members
 -- ============================================================================
 --
 -- Register van leden en bestuurders. Dit zijn CONTACTEN die beheerd worden

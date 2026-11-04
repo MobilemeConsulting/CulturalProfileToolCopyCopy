@@ -71,8 +71,9 @@ Migraties in [supabase/migrations](supabase/migrations) (draai in volgorde via S
 5. `005_admin_users_rpc.sql` — `get_admin_users()` RPC.
 6. `006_match_status.sql` — `status`-kolom op match_results (mini-CRM).
 7. `007_match_crm_fields.sql` — CRM-uitbreiding: `notes`, `contact_name`, `contact_email`, `contact_phone`, `last_contact_at`, `next_contact_at`.
-8. `008_roles_extend.sql` — rollen verruimd naar `admin`|`bestuurder`|`lid`|`user`; `is_staff()` (admin+bestuurder); `match_results` nu staff-toegankelijk i.p.v. admin-only.
-9. `009_members.sql` — `members`-tabel (ledenregister) + RLS staff-only + `updated_at`-trigger.
+8. `008_tighten_rls.sql` — scherpt de anon-policies uit 002 aan: anon mag profielen lezen + aanmaken/bijwerken (publieke tool), authenticated volledige CRUD; op `organizations`/`respondents`/`responses` is anon enkel SELECT.
+9. `009_roles_extend.sql` — rollen verruimd naar `admin`|`bestuurder`|`lid`|`user`; `is_staff()` (admin+bestuurder); `match_results` nu staff-toegankelijk i.p.v. admin-only.
+10. `010_members.sql` — `members`-tabel (ledenregister) + RLS staff-only + `updated_at`-trigger.
 
 **Eerste admin bootstrappen** (na user aanmaken in Auth → Users):
 ```sql
