@@ -98,10 +98,13 @@ Redirect-URL `<domein>/admin/accept` toevoegen in Supabase → Auth → URL Conf
 
 ## Deploy (Vercel)
 - Gekoppeld aan GitHub repo `MobilemeConsulting/CulturalProfileToolCopyCopy`; push naar `main` = productie-deploy.
+- **Repo is PUBLIC** (sinds 2026-11-04). Reden: de Vercel-account (team "MobileMe consulting", Hobby) is op GitHub-vlak gekoppeld aan een **ander** account (`Leagl-bv`, voor de LEAGL-website), terwijl de committer `MobilemeConsulting` is. Op een private Hobby-repo blokkeert Vercel dan elke deploy ("not a member of the team"). Een public repo deployt ongeacht de committer — vandaar deze keuze. Er staan geen secrets in de code (`.env` is gitignored; sleutels zitten in Supabase/Vercel-env).
 - [vercel.json](vercel.json) bevat SPA-rewrite (nodig voor `/admin`-routes, anders 404).
 - Zet in Vercel → Environment Variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Vite bakt ze in tijdens build → **redeploy** na wijziging).
 
 ### ⚠️ Vercel Hobby — committer-identiteit (belangrijke valkuil)
+> ⓘ Sinds de repo **public** is (zie boven) is deze valkuil niet langer blokkerend: Hobby deployt een public repo ongeacht de committer. Onderstaande blijft relevant als de repo ooit weer private wordt.
+
 Op het **Hobby-plan** blokkeert Vercel elke deploy waarvan de git-**committer-e-mail niet aan de GitHub-accounteigenaar gekoppeld is** ("GitHub could not associate the committer with a GitHub user" / "Hobby teams do not support collaboration"). Dit gaat NIET over meerdere mensen — het is puur e-mail-matching.
 - **Commit altijd met de GitHub-e-mail van de eigenaar.** De repo-config staat hierop ingesteld:
   ```
@@ -116,7 +119,9 @@ Op het **Hobby-plan** blokkeert Vercel elke deploy waarvan de git-**committer-e-
 ```
 VITE_SUPABASE_URL=...
 VITE_SUPABASE_ANON_KEY=...
+VITE_MATCHING_PASSWORD=...   # optioneel; enkel nodig als de (verwijderde) Matching-tab ooit heractiveerd wordt
 ```
+`PasswordProtection.tsx` leest het Matching-wachtwoord uit `VITE_MATCHING_PASSWORD` (niet langer hardcoded, want de repo is public).
 
 ## Bekende design-keuzes
 - **Slider-scores initialisatie**: `CulturalProfileForm.tsx` en `ProfitProfileForm.tsx` initialiseren alle slider-scores op 50 (de visuele default). Dit voorkomt dat niet-aangeraakte sliders als "niet ingevuld" worden gezien bij validatie. Verwijder deze initialisatie NIET.
