@@ -5,7 +5,9 @@ interface PasswordProtectionProps {
   onUnlock: () => void;
 }
 
-const CORRECT_PASSWORD = 'aHHa$2026';
+// Niet langer hardcoded (repo is publiek). Zet VITE_MATCHING_PASSWORD in de
+// omgeving als de Matching-tab ooit heractiveerd wordt.
+const CORRECT_PASSWORD = import.meta.env.VITE_MATCHING_PASSWORD ?? '__matching_disabled__';
 
 export function PasswordProtection({ onUnlock }: PasswordProtectionProps) {
   const [password, setPassword] = useState('');
