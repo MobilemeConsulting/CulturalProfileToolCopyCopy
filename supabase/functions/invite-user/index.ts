@@ -103,7 +103,8 @@ Deno.serve(async (req) => {
     if (!email) {
       return json({ error: 'E-mailadres ontbreekt' }, 400);
     }
-    const newRole = role === 'admin' ? 'admin' : 'user';
+    const ALLOWED_ROLES = ['admin', 'bestuurder', 'lid', 'user'];
+    const newRole = ALLOWED_ROLES.includes(role) ? role : 'user';
 
     // Check of de gebruiker al bestaat (dan recovery i.p.v. invite).
     const { data: existingUsers } = await admin.auth.admin.listUsers();

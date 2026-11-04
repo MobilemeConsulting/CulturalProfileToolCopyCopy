@@ -4,6 +4,15 @@
 
 import { supabase } from './supabaseClient';
 
+// Rollen in het systeem.
+//   admin       - volledige toegang incl. gebruikers-/rollenbeheer
+//   bestuurder  - mag inloggen en met de data werken, geen gebruikersbeheer
+//   lid / user  - geen /admin-toegang
+export type Role = 'admin' | 'bestuurder' | 'lid' | 'user';
+
+// Rollen die mogen inloggen op /admin en de data mogen zien (staff).
+export const STAFF_ROLES: Role[] = ['admin', 'bestuurder'];
+
 export async function signIn(email: string, password: string): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -21,13 +30,13 @@ export async function getCurrentUser() {
   return data.user ?? null;
 }
 
-// Controleert of de ingelogde gebruiker de rol 'admin' heeft in user_roles.
-export async function isAdmin(): Promise<boolean> {
-  if (!supabase) return false;
+// Haalt de rol van de ingelogde gebruiker op uit user_roles (null = geen rol).
+export async function getRole(): Promise<Role | null> {
+  if (!supabase) return null;
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return false;
+  if (!user) return null;
 
   const { data, error } = await supabase
     .from('user_roles')
@@ -36,10 +45,21 @@ export async function isAdmin(): Promise<boolean> {
     .maybeSingle();
 
   if (error) {
-    console.error('isAdmin check failed:', error.message);
-    return false;
+    console.error('getRole check failed:', error.message);
+    return null;
   }
-  return data?.role === 'admin';
+  return (data?.role as Role) ?? null;
+}
+
+// Controleert of de ingelogde gebruiker de rol 'admin' heeft in user_roles.
+export async function isAdmin(): Promise<boolean> {
+  return (await getRole()) === 'admin';
+}
+
+// Staff = admin OF bestuurder (mag inloggen en met de data werken).
+export async function isStaff(): Promise<boolean> {
+  const role = await getRole();
+  return role != null && STAFF_ROLES.includes(role);
 }
 
 // Abonneert op auth-wijzigingen (login/logout). Geeft de subscription terug
@@ -57,7 +77,7 @@ export function onAuthChange(callback: () => void) {
 export interface AdminUser {
   id: string;
   email: string;
-  role: 'admin' | 'user';
+  role: Role;
   created_at: string;
   last_sign_in_at: string | null;
 }
@@ -77,7 +97,7 @@ export async function listUsers(): Promise<AdminUser[]> {
 // Geeft { error, inviteLink } terug — de link kan getoond worden als SMTP niet werkt.
 export async function inviteUser(
   email: string,
-  role: 'admin' | 'user'
+  role: Role
 ): Promise<{ error: string | null; inviteLink?: string }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const redirectTo = `${window.location.origin}/admin/accept`;
@@ -114,7 +134,7 @@ export async function inviteUser(
 // Rol van een bestaande gebruiker wijzigen (admin RLS staat dit toe).
 export async function setUserRole(
   userId: string,
-  role: 'admin' | 'user'
+  role: Role
 ): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'Supabase is niet geconfigureerd.' };
   const { error } = await supabase.from('user_roles').upsert({ user_id: userId, role });
@@ -155,7 +175,7 @@ export async function deleteUser(userId: string): Promise<{ error: string | null
 // Nieuwe invite-link genereren voor een bestaande gebruiker (resend).
 export async function resendInvite(
   email: string,
-  role: 'admin' | 'user'
+  role: Role
 ): Promise<{ error: string | null; inviteLink?: string }> {
   // Hergebruik inviteUser — generateLink genereert een nieuwe token.
   return inviteUser(email, role);

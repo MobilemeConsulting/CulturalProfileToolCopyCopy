@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Lock, Eye, EyeOff, ArrowLeft, Loader2, LogOut, ShieldAlert } from 'lucide-react';
-import { signIn, signOut, getCurrentUser, isAdmin, onAuthChange } from '../services/authService';
+import { signIn, signOut, getCurrentUser, getRole, onAuthChange, STAFF_ROLES, Role } from '../services/authService';
 import { AdminDashboard } from './AdminDashboard';
 
 // --- Echte login via Supabase Auth ------------------------------------------
@@ -111,10 +111,10 @@ function NotAdmin({ email, onSignOut }: { email: string | null; onSignOut: () =>
         <div className="inline-flex items-center justify-center w-16 h-16 border border-amber-500 rounded-full mb-6">
           <ShieldAlert className="w-8 h-8 text-amber-600" />
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-3">Geen beheerdersrechten</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-3">Geen toegang</h2>
         <p className="text-gray-600 mb-6">
-          Je bent ingelogd als <strong>{email}</strong>, maar dit account heeft geen admin-rol.
-          Vraag een beheerder om je te activeren.
+          Je bent ingelogd als <strong>{email}</strong>, maar dit account heeft geen beheerders- of
+          bestuurdersrol. Vraag een beheerder om je te activeren.
         </p>
         <button
           onClick={onSignOut}
@@ -127,11 +127,12 @@ function NotAdmin({ email, onSignOut }: { email: string | null; onSignOut: () =>
   );
 }
 
-type AuthState = 'loading' | 'signed-out' | 'not-admin' | 'admin';
+type AuthState = 'loading' | 'signed-out' | 'not-admin' | 'staff';
 
 export function AdminPage() {
   const [state, setState] = useState<AuthState>('loading');
   const [email, setEmail] = useState<string | null>(null);
+  const [role, setRole] = useState<Role>('user');
 
   const check = async () => {
     const user = await getCurrentUser();
@@ -141,8 +142,13 @@ export function AdminPage() {
       return;
     }
     setEmail(user.email ?? null);
-    const admin = await isAdmin();
-    setState(admin ? 'admin' : 'not-admin');
+    const r = await getRole();
+    if (r && STAFF_ROLES.includes(r)) {
+      setRole(r);
+      setState('staff');
+    } else {
+      setState('not-admin');
+    }
   };
 
   useEffect(() => {
@@ -167,5 +173,5 @@ export function AdminPage() {
   }
   if (state === 'signed-out') return <AdminLogin onSignedIn={check} />;
   if (state === 'not-admin') return <NotAdmin email={email} onSignOut={handleSignOut} />;
-  return <AdminDashboard onSignOut={handleSignOut} />;
+  return <AdminDashboard onSignOut={handleSignOut} role={role} />;
 }

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { UserPlus, Loader2, Check, Mail, Shield, User as UserIcon, RefreshCw, Trash2, Send, KeyRound } from 'lucide-react';
-import { listUsers, inviteUser, setUserRole, deleteUser, resendInvite, resetUserPassword, AdminUser } from '../services/authService';
+import { listUsers, inviteUser, setUserRole, deleteUser, resendInvite, resetUserPassword, AdminUser, Role } from '../services/authService';
+
+const ROLE_OPTIONS: Role[] = ['admin', 'bestuurder', 'lid', 'user'];
 
 export function UsersSection() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'admin' | 'user'>('user');
+  const [role, setRole] = useState<Role>('user');
   const [inviting, setInviting] = useState(false);
   const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
 
@@ -48,7 +50,7 @@ export function UsersSection() {
   const [newPw, setNewPw] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const handleRoleChange = async (user: AdminUser, newRole: 'admin' | 'user') => {
+  const handleRoleChange = async (user: AdminUser, newRole: Role) => {
     const { error } = await setUserRole(user.id, newRole);
     if (error) {
       setFeedback({ ok: false, msg: error });
@@ -135,11 +137,12 @@ export function UsersSection() {
             <label className="block text-sm font-medium text-slate-700 mb-1">Rol</label>
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value as 'admin' | 'user')}
+              onChange={(e) => setRole(e.target.value as Role)}
               className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
             >
-              <option value="user">user</option>
-              <option value="admin">admin</option>
+              {ROLE_OPTIONS.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
             </select>
           </div>
           <button
@@ -244,11 +247,12 @@ export function UsersSection() {
                     {/* Rol wijzigen */}
                     <select
                       value={u.role}
-                      onChange={(e) => handleRoleChange(u, e.target.value as 'admin' | 'user')}
+                      onChange={(e) => handleRoleChange(u, e.target.value as Role)}
                       className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
                     >
-                      <option value="user">user</option>
-                      <option value="admin">admin</option>
+                      {ROLE_OPTIONS.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
                     </select>
                     {/* Wachtwoord resetten */}
                     <button

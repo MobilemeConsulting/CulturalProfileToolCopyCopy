@@ -34,7 +34,10 @@ import {
   dataQuality,
 } from '../utils/adminStats';
 import { UsersSection } from './UsersSection';
+import { MembersSection } from './MembersSection';
 import { ProfilesSection } from './ProfilesSection';
+import { Contact } from 'lucide-react';
+import { Role } from '../services/authService';
 import { InsightsSection } from './InsightsSection';
 import { CompareSection } from './CompareSection';
 import { FileDown, Mail, Database, Sparkles, ChevronDown, ChevronUp, StickyNote, FileSpreadsheet, ArrowLeftRight } from 'lucide-react';
@@ -75,9 +78,12 @@ type Tab =
   | 'gaps'
   | 'quality'
   | 'insights'
+  | 'members'
   | 'users';
 
-const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
+// `adminOnly`-tabs zijn enkel zichtbaar voor de rol 'admin'; de rest ziet
+// bestuurders (staff) ook.
+const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
   { id: 'overview', label: 'Overzicht', icon: LayoutDashboard },
   { id: 'profiles', label: 'Profielen', icon: Database },
   { id: 'matrix', label: 'Match-matrix', icon: Grid3x3 },
@@ -87,15 +93,19 @@ const TABS: { id: Tab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: 'gaps', label: 'Perceptiekloof', icon: AlertTriangle },
   { id: 'quality', label: 'Datakwaliteit', icon: ClipboardCheck },
   { id: 'insights', label: 'Inzichten', icon: Sparkles },
-  { id: 'users', label: 'Gebruikers', icon: UsersIcon },
+  { id: 'members', label: 'Leden & Bestuur', icon: Contact },
+  { id: 'users', label: 'Gebruikers', icon: UsersIcon, adminOnly: true },
 ];
 
-export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
+export function AdminDashboard({ onSignOut, role = 'admin' }: { onSignOut: () => void; role?: Role }) {
   const [profiles, setProfiles] = useState<OrganisationProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [savedResults, setSavedResults] = useState<MatchResult[]>([]);
+
+  const isAdminRole = role === 'admin';
+  const visibleTabs = TABS.filter((t) => isAdminRole || !t.adminOnly);
 
   const loadProfiles = async () => {
     let loaded = await getAllProfiles();
@@ -153,7 +163,7 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
         </div>
 
         <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
-          {TABS.map((t) => {
+          {visibleTabs.map((t) => {
             const Icon = t.icon;
             return (
               <button
@@ -201,7 +211,8 @@ export function AdminDashboard({ onSignOut }: { onSignOut: () => void }) {
           {tab === 'gaps' && <GapsSection profiles={profiles} />}
           {tab === 'quality' && <QualitySection profiles={profiles} />}
           {tab === 'insights' && <InsightsSection profiles={profiles} />}
-          {tab === 'users' && <UsersSection />}
+          {tab === 'members' && <MembersSection />}
+          {tab === 'users' && isAdminRole && <UsersSection />}
         </div>
       </main>
     </div>

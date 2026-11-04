@@ -31,7 +31,7 @@ Er is geen lokale `tsc`; typecheck gebeurt via `npx vite build` (esbuild).
 ## Wachtwoorden / toegang
 - **Demo laden**: geen wachtwoord.
 - **Matching-tab**: verwijderd uit publieke tool (nu alleen via /admin). `PasswordProtection.tsx` en `MatchingView.tsx` staan nog in de code voor eventuele re-activatie.
-- **/admin**: echte Supabase-Auth login + rol `admin` in `user_roles` (geen hardcoded wachtwoord).
+- **/admin**: echte Supabase-Auth login + een **staff-rol** in `user_roles` (geen hardcoded wachtwoord). Rollen: `admin` | `bestuurder` | `lid` | `user`. **Staff = `admin` of `bestuurder`** (`is_staff()`) → mag inloggen op `/admin` en met de data werken. `admin` ziet daarbovenop de tab **Gebruikers** (gebruikers-/rollenbeheer, `is_admin()`). `lid`/`user` krijgen géén `/admin`-toegang. "Leden en bestuurders" als **contacten** (geen login) zitten in het register (tab Leden & Bestuur).
 
 ## Datamodel
 Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts) — `id`, `organisationType` (`cultural`|`profit`), `meta`, `dimensions[]` (elk met `axes[]`, score 0-100), `identitySummary`, optioneel `profitData` (leadership/staff responses), `createdAt`/`updatedAt`.
@@ -39,7 +39,8 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 ## Services ([src/app/services](src/app/services))
 - `supabaseClient.ts` — init client uit `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`; `null` als config ontbreekt.
 - `supabaseService.ts` — profielen-CRUD + match_results. Publieke API: `isConfigured`, `getAllProfiles`, `getProfile`, `saveProfile`, `deleteProfile`, `saveBulkProfiles`, `syncProfiles`, `saveMatchResult`, `getMatchResults`. **Valt terug op localStorage** wanneer niet geconfigureerd (nooit crashen).
-- `authService.ts` — Supabase Auth: `signIn`, `signOut`, `getCurrentUser`, `isAdmin`, `onAuthChange`, `listUsers`, `inviteUser` (retourneert invite-link), `deleteUser`, `resendInvite`, `setUserRole`, `setPassword`. `inviteUser`/`deleteUser` gebruiken directe `fetch` naar de edge function (niet `supabase.functions.invoke`).
+- `authService.ts` — Supabase Auth: `signIn`, `signOut`, `getCurrentUser`, `getRole`, `isAdmin`, `isStaff`, `onAuthChange`, `listUsers`, `inviteUser` (retourneert invite-link), `deleteUser`, `resendInvite`, `setUserRole`, `resetUserPassword`, `setPassword`. Exporteert `type Role` en `STAFF_ROLES`. `inviteUser`/`deleteUser`/`resetUserPassword` gebruiken directe `fetch` naar de edge function (niet `supabase.functions.invoke`).
+- `membersService.ts` — CRUD voor het **ledenregister** (`members`-tabel): `getMembers`, `saveMember` (insert/update), `deleteMember`. Valt terug op localStorage als Supabase niet geconfigureerd is. Types `Member`, `MemberInput`, `MemberType` (`lid`|`bestuurder`).
 - `reportService.ts` — `sendMatchReport` (via edge function `send-match-report`), `buildMatchReportHtml`.
 - `matchStatusService.ts` — `updateMatchStatus`, `updateMatchCRM`, `MATCH_STATUSES`, `MATCH_STATUS_LABELS`.
 - `googleSheets.ts.bak` — **oude** backend, bewust als referentie bewaard (niet gebruiken).
@@ -53,9 +54,10 @@ Kerntype: `OrganisationProfile` in [src/app/data/types.ts](src/app/data/types.ts
 
 ## Admin ([src/app/admin](src/app/admin))
 - `AdminPage.tsx` — auth-gate (login / geen-rol / dashboard).
-- `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, Vergelijking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, Gebruikers. Responsive hamburger-menu op mobiel. Overzicht bevat Excel-export knoppen. Ranking heeft uitklapbare CRM per match + Excel-export.
+- `AdminDashboard.tsx` — sidebar-navigatie: Overzicht, Profielen, Match-matrix, Ranking, Vergelijking, CSROI-benchmark, Perceptiekloof, Datakwaliteit, Inzichten, **Leden & Bestuur**, Gebruikers. Krijgt een `role`-prop; tabs met `adminOnly` (Gebruikers) zijn enkel zichtbaar voor `admin`, de rest ziet een `bestuurder` ook. Responsive hamburger-menu op mobiel. Overzicht bevat Excel-export knoppen. Ranking heeft uitklapbare CRM per match + Excel-export.
 - `CompareSection.tsx` — vergelijkingsview: twee profielen naast elkaar met radar chart overlay (Recharts) + scoretabel per CSROI-dimensie.
-- `UsersSection.tsx` — volledige gebruikers-CRUD: uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), wachtwoord resetten, rollen wijzigen.
+- `UsersSection.tsx` — volledige gebruikers-CRUD (admin-only): uitnodigen (invite-link), verwijderen (met bevestiging), opnieuw uitnodigen (resend), wachtwoord resetten, rollen wijzigen (`admin`/`bestuurder`/`lid`/`user`).
+- `MembersSection.tsx` — CRUD voor het ledenregister (tab **Leden & Bestuur**, voor staff): toevoegen/bewerken/verwijderen van contacten met type `lid`|`bestuurder`, filter per type. Dit zijn contacten zonder login.
 - `InsightsSection.tsx` — AI-gesprekstarter: zoekt automatisch website, jaarverslagen en CSR-rapporten op (Firecrawl search) en vergelijkt beweerde cultuur met gemeten profiel + perceptiekloof. Website-URL is optioneel (wordt automatisch gezocht op basis van organisatienaam). Toont gevonden bronnen en apart CSR-inzichten blok.
 - `ProfilesSection.tsx` — profielen CRUD (aanmaken, bewerken, verwijderen) + deelbare profiellink (share-knop).
 - `AdminAccept.tsx` — invite afhandelen + wachtwoord instellen.
@@ -69,6 +71,8 @@ Migraties in [supabase/migrations](supabase/migrations) (draai in volgorde via S
 5. `005_admin_users_rpc.sql` — `get_admin_users()` RPC.
 6. `006_match_status.sql` — `status`-kolom op match_results (mini-CRM).
 7. `007_match_crm_fields.sql` — CRM-uitbreiding: `notes`, `contact_name`, `contact_email`, `contact_phone`, `last_contact_at`, `next_contact_at`.
+8. `008_roles_extend.sql` — rollen verruimd naar `admin`|`bestuurder`|`lid`|`user`; `is_staff()` (admin+bestuurder); `match_results` nu staff-toegankelijk i.p.v. admin-only.
+9. `009_members.sql` — `members`-tabel (ledenregister) + RLS staff-only + `updated_at`-trigger.
 
 **Eerste admin bootstrappen** (na user aanmaken in Auth → Users):
 ```sql
