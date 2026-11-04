@@ -264,7 +264,7 @@ Gebruikers kunnen elk profiel exporteren als `.json` bestand en later terug impo
 ## 9. Toegangsbeveiliging
 
 ### Matching-functie (wachtwoord)
-- **Wachtwoord**: `aHHa$2026`
+- **Wachtwoord**: `(verwijderd — zie VITE_MATCHING_PASSWORD)`
 - **Opgeslagen in**: `sessionStorage` (vervalt bij sluiten browser-tab)
 - **Geautoriseerde gebruikers**: Bart Vandesompele, Filip Clarys
 - **Locatie in code**: `App.tsx` (constante `CORRECT_PASSWORD`) + `PasswordProtection.tsx`
@@ -315,7 +315,7 @@ De tool is gebouwd voor desktop. Mobiele weergave is functioneel maar niet geopt
 
 ### 10.6 Authenticatie voor productie
 
-Het huidige wachtwoord (`aHHa$2026`) is client-side en niet veilig. Voor productiegebruik:
+Het huidige wachtwoord (`(verwijderd — zie VITE_MATCHING_PASSWORD)`) is client-side en niet veilig. Voor productiegebruik:
 - Supabase Auth (email/wachtwoord of magic link)
 - Of een eenvoudige server-side sessie
 
@@ -368,7 +368,7 @@ Aangemaakt via `.env` in de projectroot. Worden ingelezen via `import.meta.env.V
 
 ### Wachtwoord wijzigen
 1. Open `src/app/App.tsx`
-2. Zoek: `const CORRECT_PASSWORD = 'aHHa$2026'`
+2. Zoek: `const CORRECT_PASSWORD = '(verwijderd — zie VITE_MATCHING_PASSWORD)'`
 3. Vervang de waarde
 
 ### Gewichten aanpassen (60/40)

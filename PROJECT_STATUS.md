@@ -107,7 +107,7 @@ Interactieve tool voor culturele organisaties om hun organisatieprofiel in kaart
 - **MatchingView**: Toont matches tussen culturele en profit organisaties
 - **Radar charts**: Visuele vergelijking van profielen
 - **Match percentage**: Gebaseerd op score-overlap
-- **🔒 Wachtwoord Bescherming**: Matching tab beveiligd met wachtwoord "aHHa$2026"
+- **🔒 Wachtwoord Bescherming**: Matching tab beveiligd met wachtwoord "(verwijderd — zie VITE_MATCHING_PASSWORD)"
   - Alleen toegankelijk voor geautoriseerde gebruikers
   - Sessie-gebaseerde toegang (blijft actief tijdens browser sessie)
   - Contact: Bart Vandesompele of Filip Clarys voor toegang
@@ -287,5 +287,5 @@ Dit document dient als:
 **Updates:** 
 - Volledig profiel aanmaak systeem geïmplementeerd met export/import functionaliteit
 - KBC Bank demo profiel toegevoegd (5e demo organisatie)
-- 🔒 Wachtwoord bescherming toegevoegd aan matching functionaliteit (wachtwoord: "aHHa$2026")
+- 🔒 Wachtwoord bescherming toegevoegd aan matching functionaliteit (wachtwoord: "(verwijderd — zie VITE_MATCHING_PASSWORD)")
 - Profiel aanmaak flow toont direct het organisatie overzicht na voltooiing

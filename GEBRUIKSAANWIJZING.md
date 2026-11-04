@@ -54,7 +54,7 @@ De AHHA Cultural Matching Tool helpt culturele organisaties en bedrijven hun org
 - **Responses**: Vergelijking leadership vs. personeel (alleen profit)
 
 ### Tab 3: Matching 🔒
-**Wachtwoord vereist:** `aHHa$2026`
+**Wachtwoord vereist:** `(verwijderd — zie VITE_MATCHING_PASSWORD)`
 
 - Bekijk matches tussen culturele organisaties en bedrijven
 - Radar charts voor visuele vergelijking
@@ -147,7 +147,7 @@ Klik op de **"Demo"** knop in de navigatie
 ## 🔒 Beveiliging
 
 ### Wachtwoord Matching
-- **Wachtwoord:** `aHHa$2026`
+- **Wachtwoord:** `(verwijderd — zie VITE_MATCHING_PASSWORD)`
 - Sessie-gebaseerd (blijft actief tijdens browser sessie)
 - Bij nieuwe sessie opnieuw invoeren
 
