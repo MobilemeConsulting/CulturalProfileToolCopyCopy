@@ -83,8 +83,10 @@ export default function App() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setProfiles(parsed);
+        const parsed = JSON.parse(saved) as OrganisationProfile[];
+        // Ontdubbel op id (voorkomt dezelfde kaart twee keer in "Mijn Organisaties").
+        const seen = new Set<string>();
+        setProfiles(parsed.filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true))));
         
         // Don't auto-sync on load - only sync when user explicitly saves/uploads
         // This prevents errors when Google Sheets is not properly configured
@@ -256,22 +258,26 @@ export default function App() {
               onChange={handleImport}
               className="hidden"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white hover:bg-white/10 transition-all"
-            >
-              <Upload className="w-5 h-5" />
-              <span className="font-medium">Profiel Importeren</span>
-            </button>
-            <ExportButton profile={currentProfile} />
-            <button
-              onClick={() => currentProfile && exportProfileToPdf(currentProfile)}
-              disabled={!currentProfile}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white hover:bg-white/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <Download className="w-5 h-5" />
-              <span className="font-medium">PDF Export</span>
-            </button>
+            {/* Import/export/PDF pas tonen zodra er een profiel is (niet verwarrend voor een eerste bezoeker). */}
+            {currentProfile && (
+              <>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white hover:bg-white/10 transition-all"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span className="font-medium">Profiel Importeren</span>
+                </button>
+                <ExportButton profile={currentProfile} />
+                <button
+                  onClick={() => exportProfileToPdf(currentProfile)}
+                  className="flex items-center gap-2 px-6 py-3 border-2 border-white/30 text-white hover:bg-white/10 transition-all"
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="font-medium">PDF Export</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
         

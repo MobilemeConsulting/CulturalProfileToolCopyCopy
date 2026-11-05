@@ -229,13 +229,25 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Type organisatie *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={orgType}
                   onChange={(e) => setOrgType(e.target.value)}
-                  placeholder="Bijv. Theatergezelschap, Museum, Concertzaal"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                >
+                  <option value="">Kies een type…</option>
+                  <option value="Podiumkunsten (theater/dans)">Podiumkunsten (theater/dans)</option>
+                  <option value="Muziek / concerten">Muziek / concerten</option>
+                  <option value="Festival">Festival</option>
+                  <option value="Museum">Museum</option>
+                  <option value="Erfgoed">Erfgoed</option>
+                  <option value="Beeldende kunst">Beeldende kunst</option>
+                  <option value="Film / audiovisueel">Film / audiovisueel</option>
+                  <option value="Literatuur / letteren">Literatuur / letteren</option>
+                  <option value="Bibliotheek">Bibliotheek</option>
+                  <option value="Sociaal-cultureel werk">Sociaal-cultureel werk</option>
+                  <option value="Kunsteducatie">Kunsteducatie</option>
+                  <option value="Andere">Andere</option>
+                </select>
               </div>
 
               <div>
