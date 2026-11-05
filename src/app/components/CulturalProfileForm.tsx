@@ -297,14 +297,6 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
 
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Score: {scores[axis.id] ?? 50}/100</span>
-                      <div className="flex gap-2 text-xs text-gray-500">
-                        <span>Links = Eerste optie</span>
-                        <span>|</span>
-                        <span>Rechts = Tweede optie</span>
-                      </div>
-                    </div>
                     <input
                       type="range"
                       min="0"
@@ -313,6 +305,10 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
                       onChange={(e) => handleScoreChange(axis.id, parseInt(e.target.value))}
                       className="w-full h-3 bg-gradient-to-r from-purple-200 via-gray-200 to-blue-200 rounded-lg appearance-none cursor-pointer slider"
                     />
+                    <div className="flex justify-between text-xs text-gray-500 mt-2">
+                      <span>{axis.label.includes('↔') ? axis.label.split('↔')[0].trim() : 'Laag'}</span>
+                      <span>{axis.label.includes('↔') ? axis.label.split('↔')[1].trim() : 'Hoog'}</span>
+                    </div>
                   </div>
 
                   <div>

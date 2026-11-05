@@ -342,7 +342,7 @@ export default function App() {
                 <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 mb-6">
                   <TabsTrigger value="overview" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
-                    Overzicht
+                    Samenvatting
                   </TabsTrigger>
                   <TabsTrigger value="csroi" className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
@@ -358,7 +358,7 @@ export default function App() {
                   </TabsTrigger>
                   <TabsTrigger value="responses" className="flex items-center gap-2">
                     <UsersIcon className="w-4 h-4" />
-                    Responses
+                    Antwoorden
                   </TabsTrigger>
                 </TabsList>
 
@@ -463,7 +463,7 @@ export default function App() {
                       </div>
                       {currentProfile.meta.crossoverFocus && (
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-slate-700 mb-1">Crossover Focus</label>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">Crossover-focus</label>
                           <div className="text-lg text-slate-900 capitalize">{currentProfile.meta.crossoverFocus}</div>
                         </div>
                       )}
@@ -483,12 +483,12 @@ export default function App() {
 
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="bg-white rounded-lg p-6 shadow-lg border border-slate-200">
-                          <h4 className="font-bold text-lg text-slate-900 mb-4">Management Responses</h4>
+                          <h4 className="font-bold text-lg text-slate-900 mb-4">Antwoorden directie</h4>
                           <p className="text-slate-600">60% weging in gecombineerd profiel</p>
                         </div>
 
                         <div className="bg-white rounded-lg p-6 shadow-lg border border-slate-200">
-                          <h4 className="font-bold text-lg text-slate-900 mb-4">Employee Responses</h4>
+                          <h4 className="font-bold text-lg text-slate-900 mb-4">Antwoorden medewerkers</h4>
                           <p className="text-slate-600">40% weging in gecombineerd profiel</p>
                         </div>
                       </div>
@@ -568,7 +568,7 @@ export default function App() {
               © {new Date().getFullYear()} AHHA Vlaanderen • Profiel Matching Tool
             </p>
             <p className="text-purple-200 text-xs mt-2">
-              Met NEB Impact CRaFT technologie
+              Cultureel impact- en matchingprofiel
             </p>
           </div>
         </div>

@@ -81,7 +81,7 @@ export function CraftProfile({ dimensions, orgName }: CraftProfileProps) {
               <div className="flex items-center gap-4">
                 <div className="text-center bg-white/20 backdrop-blur-md rounded-2xl px-8 py-5 border border-white/30 shadow-xl">
                   <div className="text-5xl font-bold text-white drop-shadow-lg">{overallImpactScore}</div>
-                  <div className="text-sm text-purple-100 mt-1">Overall Impact Score</div>
+                  <div className="text-sm text-purple-100 mt-1">Totale impactscore</div>
                 </div>
                 <div className="print:hidden">
                   <CraftExportButton dimensions={dimensions} orgName={orgName} />
@@ -370,7 +370,7 @@ export function CraftProfile({ dimensions, orgName }: CraftProfileProps) {
                 <li><strong>NEB</strong>: New European Bauhaus (Beautiful, Sustainable, Together)</li>
               </ul>
               <p className="text-blue-800 mt-2">
-                De Overall Impact Score combineert alle dimensies tot één holistische beoordeling van uw culturele impact.
+                De Totale impactscore combineert alle dimensies tot één holistische beoordeling van uw culturele impact.
               </p>
             </div>
           </CardContent>
