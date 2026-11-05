@@ -124,8 +124,8 @@ VITE_MATCHING_PASSWORD=...   # optioneel; enkel nodig als de (verwijderde) Match
 `PasswordProtection.tsx` leest het Matching-wachtwoord uit `VITE_MATCHING_PASSWORD` (niet langer hardcoded, want de repo is public).
 
 ## Bekende design-keuzes
-- **Slider-scores initialisatie**: `CulturalProfileForm.tsx` en `ProfitProfileForm.tsx` initialiseren alle slider-scores op 50 (de visuele default). Dit voorkomt dat niet-aangeraakte sliders als "niet ingevuld" worden gezien bij validatie. Verwijder deze initialisatie NIET.
-- **Slider-helpteksten**: Elke bipolaire slider legt expliciet uit wat links en rechts betekent. Enkelvoudige scores vermelden wat laag vs. hoog inhoudt. Dit is bewust zo uitgebreid op basis van gebruikersfeedback.
+- **Slider-scores + touched-tracking** (bijgewerkt na AHHA-review): de schuifjes staan visueel nog op 50 (een schuifje moet ergens staan), maar `CulturalProfileForm.tsx` houdt via een `touched`-state bij welke schuifjes de gebruiker écht bewoog. Een onaangeroerd schuifje telt **niet** als beantwoord: `handleNext` (per stap) en `handleSubmit` eisen dat elk schuifje bewogen is, en onaangeroerde schuifjes tonen een "nog niet beantwoord"-hint. Vervang `scores[id] === undefined` dus niet terug — de validatie loopt nu op `touched`. (De profit-form `ProfitProfileFormNew.tsx` moet dezelfde touched-tracking nog krijgen.)
+- **Slider-labels**: de ruwe score (`X/100`) wordt niet meer getoond; onder de balk staan de twee poolwoorden (afgeleid uit het as-label `A ↔ B`, of "Laag/Hoog" bij enkelvoudige assen). De oude "Links = Eerste optie / Rechts = Tweede optie"-tekst is verwijderd.
 
 ## Niet aanraken (protected)
 - `src/app/components/figma/ImageWithFallback.tsx`

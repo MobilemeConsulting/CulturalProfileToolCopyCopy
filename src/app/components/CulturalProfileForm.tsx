@@ -64,11 +64,16 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
 
   const [scores, setScores] = useState<{[key: string]: number}>(defaultScores);
   const [descriptions, setDescriptions] = useState<{[key: string]: string}>({});
+  // Houdt bij welke schuifjes de gebruiker echt aanraakte. De visuele default
+  // blijft 50 (het schuifje moet ergens staan), maar een onaangeroerd schuifje
+  // telt niet als beantwoord — zo kan je niet doorklikken zonder iets te plaatsen.
+  const [touched, setTouched] = useState<{[key: string]: boolean}>({});
 
   const totalSteps = 1 + culturalDimensions.length; // Meta info + dimensies
 
   const handleScoreChange = (axisId: string, value: number) => {
     setScores(prev => ({ ...prev, [axisId]: value }));
+    setTouched(prev => ({ ...prev, [axisId]: true }));
   };
 
   const handleDescriptionChange = (axisId: string, value: string) => {
@@ -79,6 +84,12 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
     if (currentStep === 0) {
       if (!orgName || !orgType) {
         alert('Vul alle velden in om verder te gaan');
+        return;
+      }
+    } else {
+      const dim = culturalDimensions[currentStep - 1];
+      if (dim && dim.axes.some(a => !touched[a.id])) {
+        alert('Beweeg elk schuifje op deze pagina voordat je verdergaat.');
         return;
       }
     }
@@ -92,10 +103,10 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
   const handleSubmit = () => {
     // Validatie: alle scores moeten ingevuld zijn
     const requiredAxes = culturalDimensions.flatMap(d => d.axes.map(a => a.id));
-    const missingScores = requiredAxes.filter(id => scores[id] === undefined);
-    
+    const missingScores = requiredAxes.filter(id => !touched[id]);
+
     if (missingScores.length > 0) {
-      alert(`Nog niet alle vragen zijn beantwoord. Ga terug en vul alle scores in.`);
+      alert(`Nog niet alle vragen zijn beantwoord. Beweeg elk schuifje voordat je het profiel aanmaakt.`);
       return;
     }
 
@@ -309,6 +320,9 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
                       <span>{axis.label.includes('↔') ? axis.label.split('↔')[0].trim() : 'Laag'}</span>
                       <span>{axis.label.includes('↔') ? axis.label.split('↔')[1].trim() : 'Hoog'}</span>
                     </div>
+                    {!touched[axis.id] && (
+                      <p className="text-xs text-amber-600 mt-1">Nog niet beantwoord — beweeg het schuifje.</p>
+                    )}
                   </div>
 
                   <div>
