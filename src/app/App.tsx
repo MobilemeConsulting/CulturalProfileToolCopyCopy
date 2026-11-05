@@ -71,6 +71,8 @@ export default function App() {
   const [currentProfile, setCurrentProfile] = useState<OrganisationProfile | null>(null);
   const [activeTab, setActiveTab] = useState('select');
   const [showCreationWizard, setShowCreationWizard] = useState(false);
+  // Waarschuwing wanneer opslaan op de server mislukt (geen stille localStorage-only).
+  const [serverSaveFailed, setServerSaveFailed] = useState(false);
   // const [matchingUnlocked, setMatchingUnlocked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -120,12 +122,15 @@ export default function App() {
           .then((success) => {
             if (success) {
               console.log('✅ Profile saved to Supabase');
+              setServerSaveFailed(false);
             } else {
-              console.log('💾 Profile saved to localStorage only (Supabase sync failed)');
+              console.warn('Supabase-opslag mislukt — enkel lokaal bewaard');
+              setServerSaveFailed(true);
             }
           })
-          .catch((error) => {
-            console.log('💾 Profile saved to localStorage only (Supabase error)');
+          .catch(() => {
+            console.warn('Supabase-opslag mislukt (fout) — enkel lokaal bewaard');
+            setServerSaveFailed(true);
           });
       } else {
         console.log('💾 Profile saved to localStorage (Supabase not configured)');
@@ -275,6 +280,23 @@ export default function App() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+
+        {/* Waarschuwing: server-opslag mislukt — niet stil terugvallen op localStorage */}
+        {serverSaveFailed && (
+          <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start justify-between gap-4">
+            <p>
+              <strong>Let op:</strong> je scan kon niet op de server worden opgeslagen en is
+              voorlopig alleen op dit toestel bewaard. Hij is dus <strong>nog niet ingediend</strong>.
+              Probeer het later opnieuw of neem contact op met AHHA.
+            </p>
+            <button
+              onClick={() => setServerSaveFailed(false)}
+              className="shrink-0 text-amber-700 hover:text-amber-900 underline"
+            >
+              Sluiten
+            </button>
+          </div>
+        )}
 
         {/* Conditionally show either wizard or tabs */}
         {showCreationWizard ? (
