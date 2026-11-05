@@ -20,8 +20,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Artistieke Positie',
       description: 'Hoe positioneert uw organisatie zich artistiek?',
       axes: [
-        { id: 'experimental_vs_traditioneel', label: 'Innovatief ↔ Conservatief', helpText: 'Zoekt uw organisatie actief naar nieuwe artistieke vormen en experimenten (links), of bouwt u verder op beproefde klassieke tradities (rechts)?' },
-        { id: 'niche_vs_breed', label: 'Gespecialiseerd ↔ Breed bereik', helpText: 'Richt uw programmatie zich op een specifiek genre of discipline (links), of biedt u een breed en gevarieerd aanbod aan (rechts)?' }
+        { id: 'experimental_vs_traditioneel', label: 'Vernieuwing', helpText: 'In welke mate zoekt uw organisatie actief naar nieuwe artistieke vormen en experimenten, in plaats van voort te bouwen op beproefde klassieke tradities?' },
+        { id: 'niche_vs_breed', label: 'Doelgroep', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis, of op een breed en divers publiek?' }
       ]
     },
     {
@@ -29,8 +29,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Publiek & Gemeenschap',
       description: 'Wie bereikt u en hoe?',
       axes: [
-        { id: 'lokaal_vs_internationaal', label: 'Lokaal ↔ Internationaal', helpText: 'Komt uw publiek vooral uit de eigen regio of gemeente (links), of trekt u bezoekers aan van buiten de regio of uit het buitenland (rechts)?' },
-        { id: 'participatief_vs_presentatie', label: 'Participatief ↔ Presentatie', helpText: 'Neemt uw publiek actief deel aan het creatieve proces, bv. via workshops of co-creatie (links), of zijn ze vooral toeschouwer bij voorstellingen en tentoonstellingen (rechts)?' },
+        { id: 'lokaal_vs_internationaal', label: 'Bereik', helpText: 'Komt uw publiek vooral uit de eigen regio of gemeente, of trekt uw organisatie bezoekers aan van buiten de regio of uit het buitenland?' },
+        { id: 'participatief_vs_presentatie', label: 'Participatie', helpText: 'Neemt uw publiek actief deel aan het creatieve proces, bijvoorbeeld via co-creatie of workshops, of is het vooral toeschouwer?' },
         { id: 'elite_vs_toegankelijk', label: 'Kenners ↔ Breed publiek', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis (links), of mikt u op een zo breed en divers mogelijk publiek (rechts)?' }
       ]
     },
@@ -39,13 +39,13 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Organisatie & Werking',
       description: 'Hoe werkt uw organisatie intern?',
       axes: [
-        { id: 'agile_vs_stable', label: 'Flexibel ↔ Gestructureerd', helpText: 'Past uw organisatie zich snel aan veranderende omstandigheden aan met weinig vaste procedures (links), of werkt u met duidelijke structuren, planningen en processen (rechts)?' },
-        { id: 'digital_vs_analog', label: 'Digitaal ↔ Fysiek/traditioneel', helpText: 'Zet uw organisatie sterk in op digitale tools, online communicatie en digitale producten (links), of werkt u vooral via fysieke ontmoetingen en traditionele werkwijzen (rechts)?' },
-        { id: 'learning_score', label: 'Leren & Ontwikkeling', helpText: 'In welke mate investeert uw organisatie in opleiding, bijscholing en professionele groei van medewerkers en vrijwilligers? Laag (links) = weinig formele leermomenten, hoog (rechts) = actief opleidingsbeleid.' },
-        { id: 'collaboration_score', label: 'Samenwerking & Teamcultuur', helpText: 'Hoe sterk werken teams samen over afdelingen of disciplines heen? Laag (links) = ieder werkt vooral zelfstandig, hoog (rechts) = er wordt actief samengewerkt en kennis gedeeld.' },
-        { id: 'autonomy_score', label: 'Autonomie & Eigenaarschap', helpText: 'Hoeveel ruimte krijgen medewerkers om zelf beslissingen te nemen binnen hun takenpakket? Laag (links) = beslissingen worden centraal genomen, hoog (rechts) = medewerkers hebben veel eigen verantwoordelijkheid.' },
-        { id: 'hierarchy_score', label: 'Plat ↔ Hiërarchisch', helpText: 'Is de besluitvorming breed gedragen met korte lijnen (links), of verloopt ze via duidelijke hiërarchische lagen en goedkeuringsprocedures (rechts)?' },
-        { id: 'communication_score', label: 'Interne openheid & transparantie', helpText: 'Hoe open wordt er intern gecommuniceerd over strategie, financiën en beslissingen? Laag (links) = informatie wordt beperkt gedeeld, hoog (rechts) = er is een cultuur van openheid en transparantie naar het hele team.' }
+        { id: 'agile_vs_stable', label: 'Flexibiliteit', helpText: 'Hoe wendbaar reageert uw organisatie op veranderingen en nieuwe kansen: vooral volgens vaste plannen en procedures, of door snel bij te sturen?' },
+        { id: 'digital_vs_analog', label: 'Digitaal', helpText: 'In welke mate zet uw organisatie in op digitale tools en digitale producten of belevingen? Online communicatie telt hier niet mee.' },
+        { id: 'learning_score', label: 'Ontwikkeling', helpText: 'Hoeveel ruimte krijgen medewerkers voor interne groei, opleiding en leren?' },
+        { id: 'collaboration_score', label: 'Teamcultuur', helpText: 'Hoe wordt er intern samengewerkt: vooral individueel of per afdeling, of sterk in teams en over afdelingen heen?' },
+        { id: 'autonomy_score', label: 'Autonomie', helpText: 'In welke mate kunnen medewerkers zelfstandig beslissingen nemen binnen een kader van basisregels?' },
+        { id: 'hierarchy_score', label: 'Organisatiestructuur', helpText: 'Verloopt de besluitvorming via een vlakke structuur, of via duidelijke hiërarchische lijnen?' },
+        { id: 'communication_score', label: 'Openheid', helpText: 'Hoe open wordt er intern gecommuniceerd over strategie, financiën en beslissingen?' }
       ]
     },
     {
