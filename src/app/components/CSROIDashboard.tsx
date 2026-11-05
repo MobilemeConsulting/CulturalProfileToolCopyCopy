@@ -111,6 +111,9 @@ export function CSROIDashboard({ dimensions, orgName, crossoverFocus }: CSROIDas
                 <h3 className="font-bold text-lg text-slate-900">Sterke Dimensies</h3>
               </div>
               <div className="space-y-2">
+                {top.length === 0 && (
+                  <p className="text-sm text-slate-500">Scores liggen dicht bij elkaar — nog geen uitgesproken sterktes.</p>
+                )}
                 {top.map((item, idx) => (
                   <div key={idx} className="text-sm">
                     <div className="font-semibold text-slate-900">{item.dimension}</div>
@@ -134,6 +137,9 @@ export function CSROIDashboard({ dimensions, orgName, crossoverFocus }: CSROIDas
                 <h3 className="font-bold text-lg text-slate-900">Groeikansen</h3>
               </div>
               <div className="space-y-2">
+                {bottom.length === 0 && (
+                  <p className="text-sm text-slate-500">Scores liggen dicht bij elkaar — nog geen uitgesproken groeikansen.</p>
+                )}
                 {bottom.map((item, idx) => (
                   <div key={idx} className="text-sm">
                     <div className="font-semibold text-slate-900">{item.dimension}</div>

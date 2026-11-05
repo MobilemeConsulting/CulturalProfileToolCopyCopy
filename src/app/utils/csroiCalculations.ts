@@ -147,8 +147,30 @@ export function getTopAndBottomDimensions(csroiScores: CSROIScores): {
     .filter(([_, score]) => score > 0)
     .sort((a, b) => b[1] - a[1]);
 
-  return {
-    top: entries.slice(0, 2).map(([dimension, score]) => ({ dimension, score })),
-    bottom: entries.slice(-2).map(([dimension, score]) => ({ dimension, score }))
-  };
+  if (entries.length < 2) {
+    return { top: [], bottom: [] };
+  }
+
+  const scores = entries.map(([, s]) => s);
+  const max = scores[0];
+  const min = scores[scores.length - 1];
+  // Bij (bijna) gelijke scores zijn er geen uitgesproken sterktes of groeikansen.
+  // Niets teruggeven voorkomt dat dezelfde dimensie tegelijk 'sterk' en 'groeikans' is.
+  const THRESHOLD = 0.3; // op de 0-5 schaal
+  if (max - min < THRESHOLD) {
+    return { top: [], bottom: [] };
+  }
+
+  const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+  const top = entries
+    .filter(([, s]) => s > mean + 0.01)
+    .slice(0, 2)
+    .map(([dimension, score]) => ({ dimension, score }));
+  const topNames = new Set(top.map((t) => t.dimension));
+  const bottom = entries
+    .filter(([dimension, s]) => s < mean - 0.01 && !topNames.has(dimension))
+    .slice(-2)
+    .map(([dimension, score]) => ({ dimension, score }));
+
+  return { top, bottom };
 }

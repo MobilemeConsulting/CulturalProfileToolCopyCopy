@@ -392,29 +392,40 @@ export default function App() {
                       </p>
                     </div>
                     
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="bg-white rounded-lg p-6 shadow-lg border border-purple-200">
-                        <h4 className="font-bold text-lg text-slate-900 mb-4">Tone of Voice</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {currentProfile.identitySummary.toneOfVoice.map((tone, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                              {tone}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                    {(currentProfile.identitySummary.toneOfVoice.length > 0 ||
+                      currentProfile.identitySummary.visualKeywords.length > 0) ? (
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {currentProfile.identitySummary.toneOfVoice.length > 0 && (
+                          <div className="bg-white rounded-lg p-6 shadow-lg border border-purple-200">
+                            <h4 className="font-bold text-lg text-slate-900 mb-4">Tone of Voice</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {currentProfile.identitySummary.toneOfVoice.map((tone, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                                  {tone}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                      <div className="bg-white rounded-lg p-6 shadow-lg border border-pink-200">
-                        <h4 className="font-bold text-lg text-slate-900 mb-4">Visuele Keywords</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {currentProfile.identitySummary.visualKeywords.map((keyword, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">
-                              {keyword}
-                            </span>
-                          ))}
-                        </div>
+                        {currentProfile.identitySummary.visualKeywords.length > 0 && (
+                          <div className="bg-white rounded-lg p-6 shadow-lg border border-pink-200">
+                            <h4 className="font-bold text-lg text-slate-900 mb-4">Visuele kernwoorden</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {currentProfile.identitySummary.visualKeywords.map((keyword, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">
+                                  {keyword}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ) : (
+                      <p className="text-sm text-slate-500 italic">
+                        Tone of voice en visuele kernwoorden worden (nog) niet via de vragenlijst verzameld.
+                      </p>
+                    )}
 
                     <div className="space-y-4">
                       {currentProfile.dimensions.map(dimension => (

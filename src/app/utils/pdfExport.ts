@@ -80,22 +80,31 @@ export function exportProfileToPdf(profile: OrganisationProfile): void {
   y += LINE_HEIGHT + 1;
 
   doc.setFontSize(11);
-  const toneText = `Tone of voice: ${profile.identitySummary.toneOfVoice.join(', ')}`;
-  const visualText = `Visuele kernwoorden: ${profile.identitySummary.visualKeywords.join(', ')}`;
+  const { toneOfVoice, visualKeywords } = profile.identitySummary;
 
-  const toneLines = doc.splitTextToSize(toneText, PAGE_RIGHT - MARGIN_LEFT);
-  toneLines.forEach((textLine: string) => {
-    ensureSpace(LINE_HEIGHT);
-    doc.text(textLine, MARGIN_LEFT, y);
-    y += LINE_HEIGHT;
-  });
+  if (toneOfVoice.length > 0) {
+    const toneLines = doc.splitTextToSize(`Tone of voice: ${toneOfVoice.join(', ')}`, PAGE_RIGHT - MARGIN_LEFT);
+    toneLines.forEach((textLine: string) => {
+      ensureSpace(LINE_HEIGHT);
+      doc.text(textLine, MARGIN_LEFT, y);
+      y += LINE_HEIGHT;
+    });
+  }
 
-  const visualLines = doc.splitTextToSize(visualText, PAGE_RIGHT - MARGIN_LEFT);
-  visualLines.forEach((textLine: string) => {
+  if (visualKeywords.length > 0) {
+    const visualLines = doc.splitTextToSize(`Visuele kernwoorden: ${visualKeywords.join(', ')}`, PAGE_RIGHT - MARGIN_LEFT);
+    visualLines.forEach((textLine: string) => {
+      ensureSpace(LINE_HEIGHT);
+      doc.text(textLine, MARGIN_LEFT, y);
+      y += LINE_HEIGHT;
+    });
+  }
+
+  if (toneOfVoice.length === 0 && visualKeywords.length === 0) {
     ensureSpace(LINE_HEIGHT);
-    doc.text(textLine, MARGIN_LEFT, y);
+    doc.text('Niet verzameld via de vragenlijst.', MARGIN_LEFT, y);
     y += LINE_HEIGHT;
-  });
+  }
 
   const filename = `${sanitizeFilename(profile.meta.orgName || 'profiel')}-profiel.pdf`;
   doc.save(filename);
