@@ -22,6 +22,8 @@ export function QuestionnaireStep({
 }: QuestionnaireStepProps) {
   const [currentDimensionIndex, setCurrentDimensionIndex] = useState(0);
   const [currentAxisIndex, setCurrentAxisIndex] = useState(0);
+  // Schuifjes die de gebruiker echt bewoog (geen stille default-score).
+  const [touched, setTouched] = useState<Set<string>>(new Set());
 
   const currentDimension = dimensions[currentDimensionIndex];
   const currentAxis = currentDimension?.axes[currentAxisIndex];
@@ -49,6 +51,7 @@ export function QuestionnaireStep({
       return dim;
     });
     onUpdate(newDimensions);
+    setTouched(prev => new Set(prev).add(currentAxis.id));
   };
 
   const handleDescriptionChange = (description: string) => {
@@ -70,6 +73,10 @@ export function QuestionnaireStep({
   };
 
   const handleNext = () => {
+    if (!touched.has(currentAxis.id)) {
+      alert('Beweeg het schuifje voordat je verdergaat.');
+      return;
+    }
     // Check of er nog meer axes zijn in deze dimensie
     if (currentAxisIndex < currentDimension.axes.length - 1) {
       setCurrentAxisIndex(prev => prev + 1);
@@ -140,10 +147,6 @@ export function QuestionnaireStep({
         <CardContent className="space-y-6">
           {/* Score slider */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Score</span>
-              <span className="text-2xl font-bold text-teal-600">{currentAxis.score}</span>
-            </div>
             <Slider
               value={[currentAxis.score]}
               onValueChange={([value]) => handleScoreChange(value)}
@@ -153,10 +156,13 @@ export function QuestionnaireStep({
               className="w-full"
             />
             <div className="flex justify-between text-xs text-gray-500">
-              <span>0 - Laag</span>
-              <span>50 - Gemiddeld</span>
-              <span>100 - Hoog</span>
+              <span>Laag</span>
+              <span>Gemiddeld</span>
+              <span>Hoog</span>
             </div>
+            {!touched.has(currentAxis.id) && (
+              <p className="text-xs text-amber-600">Nog niet beantwoord — beweeg het schuifje.</p>
+            )}
           </div>
 
           {/* Optionele toelichting */}
