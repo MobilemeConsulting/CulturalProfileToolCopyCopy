@@ -49,6 +49,7 @@ create policy "staff responses"
 -- Anon-policies uit 008 (read / insert / update) blijven ongemoeid, zodat de
 -- publieke tool blijft werken.
 drop policy if exists "authenticated full access aggregated_profiles" on public.aggregated_profiles;
+drop policy if exists "staff manage aggregated_profiles" on public.aggregated_profiles;
 create policy "staff manage aggregated_profiles"
   on public.aggregated_profiles for all to authenticated
   using (public.is_staff()) with check (public.is_staff());
