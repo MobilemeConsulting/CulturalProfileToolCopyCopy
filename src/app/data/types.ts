@@ -4,6 +4,9 @@ export interface Axis {
   score: number;
   description: string;
   identityWords: string[];
+  // Poolwoorden onder de schuifbalk (links/rechts), i.p.v. generiek Laag/Hoog.
+  left?: string;
+  right?: string;
 }
 
 export interface Dimension {

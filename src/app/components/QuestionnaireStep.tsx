@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimension, Axis } from '../data/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -24,6 +24,12 @@ export function QuestionnaireStep({
   const [currentAxisIndex, setCurrentAxisIndex] = useState(0);
   // Schuifjes die de gebruiker echt bewoog (geen stille default-score).
   const [touched, setTouched] = useState<Set<string>>(new Set());
+  const [formError, setFormError] = useState('');
+
+  // Elke nieuwe vraag bovenaan tonen (anders opent het formulier onder de vouw).
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentDimensionIndex, currentAxisIndex]);
 
   const currentDimension = dimensions[currentDimensionIndex];
   const currentAxis = currentDimension?.axes[currentAxisIndex];
@@ -52,6 +58,7 @@ export function QuestionnaireStep({
     });
     onUpdate(newDimensions);
     setTouched(prev => new Set(prev).add(currentAxis.id));
+    setFormError('');
   };
 
   const handleDescriptionChange = (description: string) => {
@@ -74,9 +81,10 @@ export function QuestionnaireStep({
 
   const handleNext = () => {
     if (!touched.has(currentAxis.id)) {
-      alert('Beweeg het schuifje voordat je verdergaat.');
+      setFormError('Beweeg het schuifje voordat je verdergaat.');
       return;
     }
+    setFormError('');
     // Check of er nog meer axes zijn in deze dimensie
     if (currentAxisIndex < currentDimension.axes.length - 1) {
       setCurrentAxisIndex(prev => prev + 1);
@@ -156,9 +164,8 @@ export function QuestionnaireStep({
               className="w-full"
             />
             <div className="flex justify-between text-xs text-gray-500">
-              <span>Laag</span>
-              <span>Gemiddeld</span>
-              <span>Hoog</span>
+              <span>{currentAxis.left ?? 'Laag'}</span>
+              <span>{currentAxis.right ?? 'Hoog'}</span>
             </div>
             {!touched.has(currentAxis.id) && (
               <p className="text-xs text-amber-600">Nog niet beantwoord — beweeg het schuifje.</p>
@@ -179,6 +186,12 @@ export function QuestionnaireStep({
           </div>
         </CardContent>
       </Card>
+
+      {formError && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {formError}
+        </div>
+      )}
 
       {/* Navigatie */}
       <div className="flex items-center justify-between">

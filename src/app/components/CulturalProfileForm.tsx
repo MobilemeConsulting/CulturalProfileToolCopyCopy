@@ -20,8 +20,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Artistieke Positie',
       description: 'Hoe positioneert uw organisatie zich artistiek?',
       axes: [
-        { id: 'experimental_vs_traditioneel', label: 'Vernieuwing', helpText: 'In welke mate zoekt uw organisatie actief naar nieuwe artistieke vormen en experimenten, in plaats van voort te bouwen op beproefde klassieke tradities?' },
-        { id: 'niche_vs_breed', label: 'Doelgroep', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis, of op een breed en divers publiek?' }
+        { id: 'experimental_vs_traditioneel', label: 'Vernieuwing', helpText: 'Zoekt uw organisatie actief naar nieuwe artistieke vormen en experimenten, of bouwt u verder op beproefde, meer klassieke of gekende recepten?', left: 'Vernieuwing en experiment', right: 'Beproefde concepten' },
+        { id: 'niche_vs_breed', label: 'Doelgroep', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis, of op een breed en divers publiek?', left: 'Voorkennis', right: 'Breed publiek' }
       ]
     },
     {
@@ -29,9 +29,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Publiek & Gemeenschap',
       description: 'Wie bereikt u en hoe?',
       axes: [
-        { id: 'lokaal_vs_internationaal', label: 'Bereik', helpText: 'Komt uw publiek vooral uit de eigen regio of gemeente, of trekt uw organisatie bezoekers aan van buiten de regio of uit het buitenland?' },
-        { id: 'participatief_vs_presentatie', label: 'Participatie', helpText: 'Neemt uw publiek actief deel aan het creatieve proces, bijvoorbeeld via co-creatie of workshops, of is het vooral toeschouwer?' },
-        { id: 'elite_vs_toegankelijk', label: 'Kenners ↔ Breed publiek', helpText: 'Richt uw aanbod zich op ingewijden en liefhebbers met voorkennis (links), of mikt u op een zo breed en divers mogelijk publiek (rechts)?' }
+        { id: 'lokaal_vs_internationaal', label: 'Bereik', helpText: 'Komt uw publiek vooral uit de eigen regio of gemeente, of trekt uw organisatie bezoekers aan van buiten de regio of uit het buitenland?', left: 'Lokaal', right: 'Bovenlokaal/internationaal' },
+        { id: 'participatief_vs_presentatie', label: 'Participatie', helpText: 'Neemt uw publiek actief deel aan het creatieve proces, bijvoorbeeld via co-creatie of workshops, of is het vooral toeschouwer?', left: 'Participatief', right: 'Toeschouwer' }
       ]
     },
     {
@@ -39,13 +38,13 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Organisatie & Werking',
       description: 'Hoe werkt uw organisatie intern?',
       axes: [
-        { id: 'agile_vs_stable', label: 'Flexibiliteit', helpText: 'Hoe wendbaar reageert uw organisatie op veranderingen en nieuwe kansen: vooral volgens vaste plannen en procedures, of door snel bij te sturen?' },
-        { id: 'digital_vs_analog', label: 'Digitaal', helpText: 'In welke mate zet uw organisatie in op digitale tools en digitale producten of belevingen? Online communicatie telt hier niet mee.' },
-        { id: 'learning_score', label: 'Ontwikkeling', helpText: 'Hoeveel ruimte krijgen medewerkers voor interne groei, opleiding en leren?' },
-        { id: 'collaboration_score', label: 'Teamcultuur', helpText: 'Hoe wordt er intern samengewerkt: vooral individueel of per afdeling, of sterk in teams en over afdelingen heen?' },
-        { id: 'autonomy_score', label: 'Autonomie', helpText: 'In welke mate kunnen medewerkers zelfstandig beslissingen nemen binnen een kader van basisregels?' },
-        { id: 'hierarchy_score', label: 'Organisatiestructuur', helpText: 'Verloopt de besluitvorming via een vlakke structuur, of via duidelijke hiërarchische lijnen?' },
-        { id: 'communication_score', label: 'Openheid', helpText: 'Hoe open wordt er intern gecommuniceerd over strategie, financiën en beslissingen?' }
+        { id: 'agile_vs_stable', label: 'Flexibiliteit', helpText: 'Hoe wendbaar reageert uw organisatie op veranderingen en nieuwe kansen: vooral volgens vaste plannen en procedures, of door snel bij te sturen?', left: 'Vaste procedures', right: 'Snel bijsturen' },
+        { id: 'digital_vs_analog', label: 'Digitaal', helpText: 'In welke mate zet uw organisatie in op digitale tools en digitale producten of belevingen? Online communicatie telt hier niet mee.', left: 'Digitale productie', right: 'Klassieke beleving' },
+        { id: 'learning_score', label: 'Ontwikkeling', helpText: 'Hoeveel ruimte krijgen medewerkers voor interne groei, opleiding en leren?', left: 'Normale vorming/ontwikkeling', right: 'Veel vorming/ontwikkeling' },
+        { id: 'collaboration_score', label: 'Teamcultuur', helpText: 'Hoe wordt er intern samengewerkt: vooral individueel of per afdeling, of sterk in teams en over afdelingen heen?', left: "Individueel/silo's", right: 'Over teams en afdelingen heen' },
+        { id: 'autonomy_score', label: 'Autonomie', helpText: 'In welke mate kunnen medewerkers zelfstandig beslissingen nemen binnen een kader van basisregels?', left: 'Weinig beslissingsruimte', right: 'Veel autonomie' },
+        { id: 'hierarchy_score', label: 'Organisatiestructuur', helpText: 'Verloopt de besluitvorming via een vlakke structuur, of via duidelijke hiërarchische lijnen?', left: 'Vlakke besluitvorming', right: 'Hiërarchisch' },
+        { id: 'communication_score', label: 'Openheid', helpText: 'Hoe open wordt er intern gecommuniceerd over strategie, financiën en beslissingen?', left: 'Eerder gesloten', right: 'Zeer open communicatiecultuur' }
       ]
     },
     {
@@ -53,8 +52,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
       label: 'Culturele Identiteit',
       description: 'Wat is de identiteit van uw organisatie?',
       axes: [
-        { id: 'roots_vs_hybride', label: 'Traditie ↔ Vernieuwing', helpText: 'Bouwt uw organisatie verder op gevestigde culturele tradities en waarden (links), of zoekt u bewust naar vernieuwing, kruisbestuiving en hybride vormen (rechts)?' },
-        { id: 'erfgoed_vs_future', label: 'Erfgoed ↔ Toekomstgericht', helpText: 'Ligt de focus op het bewaren en doorgeven van cultureel erfgoed (links), of op het verkennen van nieuwe mogelijkheden en toekomstvisie (rechts)?' }
+        { id: 'roots_vs_hybride', label: 'Traditie ↔ Vernieuwing', helpText: 'Bouwt uw organisatie verder op gevestigde culturele tradities en waarden (links), of zoekt u bewust naar vernieuwing, kruisbestuiving en hybride vormen (rechts)?', left: 'Traditie', right: 'Vernieuwing' },
+        { id: 'erfgoed_vs_future', label: 'Erfgoed ↔ Toekomstgericht', helpText: 'Ligt de focus op het bewaren en doorgeven van cultureel erfgoed (links), of op het verkennen van nieuwe mogelijkheden en toekomstvisie (rechts)?', left: 'Erfgoed', right: 'Toekomstgericht' }
       ]
     }
   ];
@@ -68,12 +67,16 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
   // blijft 50 (het schuifje moet ergens staan), maar een onaangeroerd schuifje
   // telt niet als beantwoord — zo kan je niet doorklikken zonder iets te plaatsen.
   const [touched, setTouched] = useState<{[key: string]: boolean}>({});
+  // Inline-foutmelding i.p.v. een browser-alert (die toont in een iframe de
+  // storende "een ingesloten pagina zegt..."-chrome).
+  const [formError, setFormError] = useState('');
 
   const totalSteps = 1 + culturalDimensions.length; // Meta info + dimensies
 
   const handleScoreChange = (axisId: string, value: number) => {
     setScores(prev => ({ ...prev, [axisId]: value }));
     setTouched(prev => ({ ...prev, [axisId]: true }));
+    setFormError('');
   };
 
   const handleDescriptionChange = (axisId: string, value: string) => {
@@ -83,21 +86,25 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
   const handleNext = () => {
     if (currentStep === 0) {
       if (!orgName || !orgType) {
-        alert('Vul alle velden in om verder te gaan');
+        setFormError('Vul alle velden in om verder te gaan.');
         return;
       }
     } else {
       const dim = culturalDimensions[currentStep - 1];
       if (dim && dim.axes.some(a => !touched[a.id])) {
-        alert('Beweeg elk schuifje op deze pagina voordat je verdergaat.');
+        setFormError('Beweeg elk schuifje op deze pagina voordat je verdergaat.');
         return;
       }
     }
+    setFormError('');
     setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrevious = () => {
+    setFormError('');
     setCurrentStep(prev => Math.max(prev - 1, 0));
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = () => {
@@ -106,7 +113,7 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
     const missingScores = requiredAxes.filter(id => !touched[id]);
 
     if (missingScores.length > 0) {
-      alert(`Nog niet alle vragen zijn beantwoord. Beweeg elk schuifje voordat je het profiel aanmaakt.`);
+      setFormError('Nog niet alle vragen zijn beantwoord. Beweeg elk schuifje voordat je het profiel aanmaakt.');
       return;
     }
 
@@ -329,8 +336,8 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
                       className="w-full h-3 bg-gradient-to-r from-purple-200 via-gray-200 to-blue-200 rounded-lg appearance-none cursor-pointer slider"
                     />
                     <div className="flex justify-between text-xs text-gray-500 mt-2">
-                      <span>{axis.label.includes('↔') ? axis.label.split('↔')[0].trim() : 'Laag'}</span>
-                      <span>{axis.label.includes('↔') ? axis.label.split('↔')[1].trim() : 'Hoog'}</span>
+                      <span>{axis.left}</span>
+                      <span>{axis.right}</span>
                     </div>
                     {!touched[axis.id] && (
                       <p className="text-xs text-amber-600 mt-1">Nog niet beantwoord — beweeg het schuifje.</p>
@@ -353,6 +360,12 @@ export const CulturalProfileForm: React.FC<CulturalProfileFormProps> = ({ onComp
               </div>
             ))}
           </div>
+
+          {formError && (
+            <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {formError}
+            </div>
+          )}
 
           <div className="flex justify-between items-center gap-3 mt-8 pt-6 border-t">
             <button

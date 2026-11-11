@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -22,6 +22,11 @@ export function IndividualResponseWizard({
   onCancel,
 }: IndividualResponseWizardProps) {
   const [step, setStep] = useState<'personal' | 'questionnaire'>('personal');
+
+  // Elke stap bovenaan openen (anders moet de invuller eerst scrollen).
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
   const [respondentName, setRespondentName] = useState('');
   const [respondentRole, setRespondentRole] = useState<'leadership' | 'staff'>('staff');
   const [currentDimensions, setCurrentDimensions] = useState<Dimension[]>(
