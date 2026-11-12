@@ -126,7 +126,7 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
             <Sparkles className="w-6 h-6 text-purple-600 drop-shadow-sm" />
             <AlertTitle className="text-purple-900 font-bold text-lg">NEB Impact CRaFT Profiel Beschikbaar ✨</AlertTitle>
             <AlertDescription className="text-purple-800 text-base font-medium">
-              Voor uw culturele organisatie wordt automatisch een NEB Impact CRaFT analyse gegenereerd met CRaFT, ESG en NEB scores. Scroll naar beneden om het volledige rapport te bekijken.
+              Voor je culturele organisatie wordt automatisch een NEB Impact CRaFT analyse gegenereerd met CRaFT, ESG en NEB scores. Scroll naar beneden om het volledige rapport te bekijken.
             </AlertDescription>
           </Alert>
         </div>
@@ -159,7 +159,7 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
               )}
               <div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white drop-shadow-2xl">
-                  {profile.meta.orgName || 'Uw Organisatie'}
+                  {profile.meta.orgName || 'Je organisatie'}
                 </h2>
                 <p className="text-purple-100 text-xl drop-shadow-lg">
                   {profile.meta.orgType || (profile.organisationType === 'cultural' ? 'Culturele organisatie' : 'Bedrijf')} • {profile.meta.year}
@@ -228,7 +228,7 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
             <div className="bg-white rounded-xl p-6 shadow-md border border-purple-200">
               <h3 className="text-xl font-bold text-slate-900 mb-4">Wie zijn we?</h3>
               <p className="text-lg text-slate-700 leading-relaxed">
-                <span className="font-bold text-purple-700">{profile.meta.orgName || 'Uw Organisatie'}</span> is een {profile.meta.orgType || (profile.organisationType === 'cultural' ? 'culturele organisatie' : 'bedrijf')} {' '}
+                <span className="font-bold text-purple-700">{profile.meta.orgName || 'Je organisatie'}</span> is een {profile.meta.orgType || (profile.organisationType === 'cultural' ? 'culturele organisatie' : 'bedrijf')} {' '}
                 {profile.organisationType === 'cultural' 
                   ? 'dat zich onderscheidt door een unieke culturele identiteit en maatschappelijke impact.'
                   : 'dat organisatiecultuur en medewerkerswelzijn hoog in het vaandel draagt.'}
@@ -290,14 +290,14 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
             {/* Partnership Call to Action */}
             {profile.organisationType === 'cultural' ? (
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-6 shadow-xl text-white">
-                <h3 className="text-2xl font-bold mb-3">Zoekt u een culturele partner?</h3>
+                <h3 className="text-2xl font-bold mb-3">Zoek je een bedrijfspartner?</h3>
                 <p className="text-purple-100 mb-4 leading-relaxed">
                   Wij bieden unieke mogelijkheden voor cross-over samenwerking met bedrijven die hun organisatiecultuur willen versterken 
                   door middel van culturele interventies, teambuilding en community engagement.
                 </p>
                 <div className="flex items-center gap-2 text-purple-100">
                   <Link2 className="w-5 h-5" />
-                  <span className="font-semibold">Bekijk ons volledige profiel en CSROI impact hieronder</span>
+                  <span className="font-semibold">Bekijk je volledige profiel en CSROI-impact hieronder</span>
                 </div>
               </div>
             ) : (
@@ -305,11 +305,11 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
                 <h3 className="text-2xl font-bold mb-3">Klaar voor culturele samenwerking?</h3>
                 <p className="text-blue-100 mb-4 leading-relaxed">
                   Ons bedrijfsprofiel toont waar we staan op het vlak van innovatie, samenwerking en organisatiecultuur. 
-                  We zijn opzoek naar culturele partners die onze waarden delen en ons team kunnen inspireren.
+                  We zijn op zoek naar culturele partners die onze waarden delen en ons team kunnen inspireren.
                 </p>
                 <div className="flex items-center gap-2 text-blue-100">
                   <Link2 className="w-5 h-5" />
-                  <span className="font-semibold">Ontdek matching mogelijkheden in het Matching tabblad</span>
+                  <span className="font-semibold">AHHA zoekt mee naar de culturele partner die bij jullie past</span>
                 </div>
               </div>
             )}
@@ -510,14 +510,14 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
               </div>
               <h2 className="text-4xl font-bold text-white mb-3 drop-shadow-2xl">NEB Impact CRaFT Analyse</h2>
               <p className="text-purple-100 text-lg drop-shadow-lg max-w-2xl mx-auto">
-                Automatisch gegenereerde impact analyse op basis van uw organisatieprofiel met CRaFT, ESG en NEB frameworks
+                Automatisch gegenereerde impact analyse op basis van je organisatieprofiel met CRaFT, ESG en NEB frameworks
               </p>
             </div>
           </div>
           
           <CraftProfile 
             dimensions={profile.dimensions} 
-            orgName={profile.meta.orgName || 'Uw Organisatie'}
+            orgName={profile.meta.orgName || 'Je organisatie'}
           />
         </>
       )}

@@ -388,7 +388,7 @@ export default function App() {
                         Culturele Identiteit
                       </h3>
                       <p className="text-purple-800">
-                        Deze identiteitswoorden en visuele keywords zijn gebaseerd op uw scores en kunnen gebruikt worden voor branding en communicatie.
+                        Deze identiteitswoorden en visuele keywords zijn gebaseerd op je scores en kunnen gebruikt worden voor branding en communicatie.
                       </p>
                     </div>
                     

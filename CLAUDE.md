@@ -124,8 +124,20 @@ VITE_MATCHING_PASSWORD=...   # optioneel; enkel nodig als de (verwijderde) Match
 `PasswordProtection.tsx` leest het Matching-wachtwoord uit `VITE_MATCHING_PASSWORD` (niet langer hardcoded, want de repo is public).
 
 ## Bekende design-keuzes
-- **Slider-scores + touched-tracking** (bijgewerkt na AHHA-review): de schuifjes staan visueel nog op 50 (een schuifje moet ergens staan), maar `CulturalProfileForm.tsx` houdt via een `touched`-state bij welke schuifjes de gebruiker écht bewoog. Een onaangeroerd schuifje telt **niet** als beantwoord: `handleNext` (per stap) en `handleSubmit` eisen dat elk schuifje bewogen is, en onaangeroerde schuifjes tonen een "nog niet beantwoord"-hint. Vervang `scores[id] === undefined` dus niet terug — de validatie loopt nu op `touched`. (De profit-form `ProfitProfileFormNew.tsx` moet dezelfde touched-tracking nog krijgen.)
-- **Slider-labels**: de ruwe score (`X/100`) wordt niet meer getoond; onder de balk staan de twee poolwoorden (afgeleid uit het as-label `A ↔ B`, of "Laag/Hoog" bij enkelvoudige assen). De oude "Links = Eerste optie / Rechts = Tweede optie"-tekst is verwijderd.
+- **Slider-scores + touched-tracking** (bijgewerkt na AHHA-review): de schuifjes staan visueel nog op 50 (een schuifje moet ergens staan), maar `CulturalProfileForm.tsx` houdt via een `touched`-state bij welke schuifjes de gebruiker écht bewoog. Een onaangeroerd schuifje telt **niet** als beantwoord: `handleNext` (per stap) en `handleSubmit` eisen dat elk schuifje bewogen is, en onaangeroerde schuifjes tonen een "nog niet beantwoord"-hint. Vervang `scores[id] === undefined` dus niet terug — de validatie loopt nu op `touched`. Dezelfde regel geldt in de profit-vragenlijst (`QuestionnaireStep.tsx`).
+- **Poolwoorden**: elke as heeft expliciete `left`/`right` (type `Axis`; cultureel inline in `CulturalProfileForm.tsx`, profit in `profitDimensions.ts`). **Links = lage score (0), rechts = hoge score (100)** — die richting moet overeenkomen met wat de analyse (`csroiCalculations.ts`, `craftCalculations.ts`, matching) onder een hoge score verstaat. Geen ruwe score (`X/100`) en geen "Gemiddeld" in het midden.
+- **Profit: vraag en toelichting gescheiden**: in `profitDimensions.ts` staat de vraag in `question`; `description` start leeg en is de toelichting van de invuller (zoals bij cultuur). `notePrompt` zet een vraag boven het toelichtingsveld (ESG: "Hoe kan cultuur daaraan bijdragen?").
+- **Aanspreekvorm**: overal **"je"**, niet "uw" (op vraag van AHHA).
+- **Geen `alert()`**: in een iframe-embed toont de browser er "een ingesloten pagina zegt…" bij. Gebruik inline meldingen of `toast` (sonner).
+- **Scrollen**: bij een stap- of vraagwissel brengt `scrollIntoView` het formulier of de vraagkaart in beeld — niet `window.scrollTo(0)`, want dan toont de pagina de hero en moet de invuller terug naar beneden scrollen.
+
+## ⚠️ Gekend probleem: analyse loopt achter op de vragenlijst (nov 2026)
+De berekeningen (CSROI, CRaFT, matching) zijn gebouwd voor een oudere vragenlijst. Demo-profielen gebruiken nog de oude dimensie-id's en zien er goed uit; **echte profielen niet**:
+- **Cultureel**: de form gebruikt dimensie-id `organization`, de CSROI-mapping `organisation` → de 7 vragen van "Organisatie & Werking" tellen niet mee. CRaFT leest `organisation`-assen (`pionier_vs_beheerder`, `activistisch_vs_neutraal`) die niet meer bestaan → altijd 50.
+- **Profit**: alleen dimensie `identity` is gemapt; `innovation`, `market`, `process` en `sustainability` (13 vragen) tellen niet mee in CSROI/matching.
+- **Richting**: CSROI middelt alle assen van een dimensie zonder per-as-richting. Bij `experimental_vs_traditioneel` (artistic → Innovatie) en `participatief_vs_presentatie` (audience → Participatie) staat de "meer"-kant links (lage score), dus die scores werken omgekeerd. CRaFT gebruikt die assen ook zonder omkering.
+- `getAxisScore` in `craftCalculations.ts` doet `axis?.score || 50` → een score van 0 wordt als 50 gelezen.
+- De fix vraagt een per-as-polariteit + mapping voor de huidige dimensie-id's. Dat is een methodologische keuze: eerst afstemmen met AHHA (Kurt), dan pas implementeren.
 
 ## Niet aanraken (protected)
 - `src/app/components/figma/ImageWithFallback.tsx`

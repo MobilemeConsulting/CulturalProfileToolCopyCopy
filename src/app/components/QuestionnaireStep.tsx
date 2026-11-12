@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dimension, Axis } from '../data/types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -26,9 +26,11 @@ export function QuestionnaireStep({
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [formError, setFormError] = useState('');
 
-  // Elke nieuwe vraag bovenaan tonen (anders opent het formulier onder de vouw).
+  // Bij elke nieuwe vraag de vragenlijst zelf in beeld brengen — niet de paginatop,
+  // anders moet de invuller na "Volgende" weer naar beneden scrollen.
+  const topRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [currentDimensionIndex, currentAxisIndex]);
 
   const currentDimension = dimensions[currentDimensionIndex];
@@ -118,7 +120,7 @@ export function QuestionnaireStep({
     currentAxisIndex === currentDimension.axes.length - 1;
 
   return (
-    <div className="space-y-6">
+    <div ref={topRef} className="space-y-6 scroll-mt-4">
       {/* Progress bar */}
       <Card>
         <CardContent className="pt-6">
@@ -144,7 +146,7 @@ export function QuestionnaireStep({
               </div>
               <CardTitle className="text-2xl">{currentAxis.label}</CardTitle>
               <CardDescription className="mt-2">
-                {currentAxis.description}
+                {currentAxis.question ?? currentAxis.description}
               </CardDescription>
             </div>
             <div className="bg-teal-50 px-3 py-1 rounded-full text-sm font-medium text-teal-700">
@@ -175,10 +177,10 @@ export function QuestionnaireStep({
           {/* Optionele toelichting */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Toelichting (optioneel)
+              {currentAxis.notePrompt ? `${currentAxis.notePrompt} (optioneel)` : 'Toelichting (optioneel)'}
             </label>
             <Textarea
-              placeholder="Voeg een toelichting toe bij deze score..."
+              placeholder={currentAxis.notePrompt ? 'Licht je antwoord toe...' : 'Licht je keuze toe...'}
               value={currentAxis.description || ''}
               onChange={(e) => handleDescriptionChange(e.target.value)}
               rows={3}

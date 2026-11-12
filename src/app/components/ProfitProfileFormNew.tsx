@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { OrganisationProfile, IndividualResponse, Dimension } from '../data/types';
 import { ArrowLeft, Building2, UserPlus, Save, CheckCircle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -32,11 +32,22 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
   // Cross-over focus (optioneel)
   const [crossoverFocus, setCrossoverFocus] = useState<'hr' | 'leiderschap' | 'innovatie' | 'reputatie' | 'gemeenschap'>('hr');
 
+  // Inline-melding i.p.v. browser-alert (die toont in de embed "een ingesloten pagina zegt...").
+  const [formError, setFormError] = useState('');
+
+  // Bij elke stapwissel het formulier zelf in beeld brengen. De invulstap
+  // (IndividualResponseWizard) regelt dat zelf; daar is rootRef leeg.
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    rootRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [step]);
+
   const handleOrgInfoComplete = () => {
     if (!orgName.trim() || !orgType.trim()) {
-      alert('Vul alsjeblieft alle verplichte velden in');
+      setFormError('Vul alle verplichte velden in.');
       return;
     }
+    setFormError('');
     setStep('collect-responses');
   };
 
@@ -55,9 +66,10 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
 
   const handleFinalize = () => {
     if (individualResponses.length === 0) {
-      alert('Voeg minimaal één response toe voordat je het profiel opslaat');
+      setFormError('Voeg minstens één invuller toe voordat je het profiel opslaat.');
       return;
     }
+    setFormError('');
 
     // Bereken gemiddelden
     const profitData = recalculateProfitData(individualResponses);
@@ -92,7 +104,7 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
   // Step 1: Organisatie informatie
   if (step === 'organisation-info') {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div ref={rootRef} className="min-h-screen bg-white p-8 scroll-mt-4">
         <div className="max-w-2xl mx-auto">
           <button
             onClick={onBack}
@@ -174,6 +186,12 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
                 </p>
               </div>
 
+              {formError && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {formError}
+                </div>
+              )}
+
               {/* Acties */}
               <div className="flex justify-end pt-4">
                 <Button onClick={handleOrgInfoComplete} size="lg">
@@ -190,7 +208,7 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
   // Step 2: Responses verzamelen
   if (step === 'collect-responses') {
     return (
-      <div className="min-h-screen bg-white p-8">
+      <div ref={rootRef} className="min-h-screen bg-white p-8 scroll-mt-4">
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => setStep('organisation-info')}
@@ -210,6 +228,12 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
           </div>
 
           <div className="space-y-6">
+            {formError && (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {formError}
+              </div>
+            )}
+
             {/* Responses overzicht */}
             <ResponsesOverview
               responses={individualResponses}

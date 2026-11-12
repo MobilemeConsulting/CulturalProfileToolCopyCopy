@@ -370,7 +370,7 @@ export function CraftProfile({ dimensions, orgName }: CraftProfileProps) {
                 <li><strong>NEB</strong>: New European Bauhaus (Beautiful, Sustainable, Together)</li>
               </ul>
               <p className="text-blue-800 mt-2">
-                De Totale impactscore combineert alle dimensies tot één holistische beoordeling van uw culturele impact.
+                De Totale impactscore combineert alle dimensies tot één holistische beoordeling van je culturele impact.
               </p>
             </div>
           </CardContent>

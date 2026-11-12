@@ -3,6 +3,7 @@ import { OrganisationProfile, OrganisationType } from '../data/types';
 import { CulturalProfileForm } from './CulturalProfileForm';
 import { ProfitProfileFormNew } from './ProfitProfileFormNew';
 import { Building2, Palette, Download, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProfileCreationWizardProps {
   onProfileCreated: (profile: OrganisationProfile) => void;
@@ -38,14 +39,14 @@ export const ProfileCreationWizard: React.FC<ProfileCreationWizardProps> = ({
         
         // Validatie
         if (!profile.id || !profile.organisationType || !profile.meta || !profile.dimensions) {
-          alert('Ongeldig profiel bestand. Controleer de structuur.');
+          toast.error('Ongeldig profielbestand. Controleer de structuur.');
           return;
         }
 
         onImport(profile);
-        alert(`Profiel "${profile.meta.orgName}" succesvol geïmporteerd!`);
+        toast.success(`Profiel "${profile.meta.orgName}" geïmporteerd.`);
       } catch (error) {
-        alert('Fout bij het importeren van het profiel. Controleer of het bestand correct is.');
+        toast.error('Fout bij het importeren van het profiel. Controleer of het bestand correct is.');
         console.error('Import error:', error);
       }
     };

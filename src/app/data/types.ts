@@ -5,8 +5,14 @@ export interface Axis {
   description: string;
   identityWords: string[];
   // Poolwoorden onder de schuifbalk (links/rechts), i.p.v. generiek Laag/Hoog.
+  // Links = lage score (0), rechts = hoge score (100).
   left?: string;
   right?: string;
+  // Vraagtekst uit de template (profit). `description` is dan de toelichting
+  // van de invuller, zodat het toelichtingsveld leeg start (zoals bij cultuur).
+  question?: string;
+  // Optionele vraag boven het toelichtingsveld (bv. ESG: "Hoe kan cultuur daaraan bijdragen?").
+  notePrompt?: string;
 }
 
 export interface Dimension {

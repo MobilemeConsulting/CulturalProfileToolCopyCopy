@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -23,11 +23,14 @@ export function IndividualResponseWizard({
 }: IndividualResponseWizardProps) {
   const [step, setStep] = useState<'personal' | 'questionnaire'>('personal');
 
-  // Elke stap bovenaan openen (anders moet de invuller eerst scrollen).
+  // Bij het openen de naamstap zelf in beeld brengen (anders moet de invuller
+  // eerst scrollen). De vragenlijst-stap regelt dat zelf (QuestionnaireStep).
+  const personalRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (step === 'personal') personalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [step]);
   const [respondentName, setRespondentName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [respondentRole, setRespondentRole] = useState<'leadership' | 'staff'>('staff');
   const [currentDimensions, setCurrentDimensions] = useState<Dimension[]>(
     JSON.parse(JSON.stringify(dimensions)) // Deep copy
@@ -35,9 +38,10 @@ export function IndividualResponseWizard({
 
   const handlePersonalInfoComplete = () => {
     if (!respondentName.trim()) {
-      alert('Vul alsjeblieft je naam in');
+      setNameError('Vul je naam of een alias in.');
       return;
     }
+    setNameError('');
     setStep('questionnaire');
   };
 
@@ -55,6 +59,7 @@ export function IndividualResponseWizard({
 
   if (step === 'personal') {
     return (
+      <div ref={personalRef} className="scroll-mt-4">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -68,13 +73,17 @@ export function IndividualResponseWizard({
         <CardContent className="space-y-6">
           {/* Naam */}
           <div className="space-y-2">
-            <Label htmlFor="respondent-name">Je naam *</Label>
+            <Label htmlFor="respondent-name">Je naam of een alias *</Label>
             <Input
               id="respondent-name"
-              placeholder="bijv. Jan Janssen"
+              placeholder="bijv. Jan Janssen of een alias"
               value={respondentName}
-              onChange={(e) => setRespondentName(e.target.value)}
+              onChange={(e) => { setRespondentName(e.target.value); setNameError(''); }}
             />
+            <p className="text-xs text-gray-500">
+              Je mag een alias gebruiken als je de vragenlijst anoniem wil invullen.
+            </p>
+            {nameError && <p className="text-sm text-amber-700">{nameError}</p>}
           </div>
 
           {/* Rol */}
@@ -138,6 +147,7 @@ export function IndividualResponseWizard({
           </div>
         </CardContent>
       </Card>
+      </div>
     );
   }
 
