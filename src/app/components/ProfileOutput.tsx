@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from 'recharts';
 import type { Profile } from '../App';
+import { CULTURAL_ROLES } from '../data/respondentRoles';
 import { Building2, Palette, Users, Briefcase, Heart, MessageSquare, Eye, Printer, TrendingUp, UserCog, Info, Sparkles, Link2 } from 'lucide-react';
 import { CraftProfile } from './CraftProfile';
 
@@ -100,16 +101,23 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
         </button>
       </div>
 
-      {/* Profit Data Alert */}
-      {profile.organisationType === 'profit' && profile.profitData && (
-        <Alert className="bg-blue-50 border-blue-200">
-          <Info className="w-5 h-5 text-blue-600" />
-          <AlertTitle>Gecombineerd Bedrijfsprofiel</AlertTitle>
-          <AlertDescription>
-            Dit profiel is samengesteld uit antwoorden van bedrijfsleiding (60%) en personeel (40%)
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Gecombineerd profiel (meerdere invullers). De weging per rol blijft intern. */}
+      {(() => {
+        const n =
+          profile.profitData?.individualResponses?.length ??
+          profile.culturalData?.individualResponses?.length ??
+          0;
+        if (n === 0) return null;
+        return (
+          <Alert className="bg-blue-50 border-blue-200">
+            <Info className="w-5 h-5 text-blue-600" />
+            <AlertTitle>Gecombineerd profiel</AlertTitle>
+            <AlertDescription>
+              Dit profiel is samengesteld uit de antwoorden van {n === 1 ? '1 invuller' : `${n} invullers`}.
+            </AlertDescription>
+          </Alert>
+        );
+      })()}
 
       {/* CRaFT Profile Alert for Cultural Organisations */}
       {profile.organisationType === 'cultural' && (
@@ -379,13 +387,22 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
               <CardContent className="pt-6">
                 <div className="space-y-6">
                   {dimension.axes.map((axis) => {
-                    // Find original responses if profit profile
-                    const leaderAxis = profile.profitData?.leadershipResponses
-                      .find(d => d.id === dimension.id)
-                      ?.axes.find(a => a.id === axis.id);
-                    const staffAxis = profile.profitData?.staffResponses
-                      .find(d => d.id === dimension.id)
-                      ?.axes.find(a => a.id === axis.id);
+                    // Score per rol (zonder weging) — enkel als er minstens twee rollen zijn.
+                    const breakdown: { label: string; score: number }[] = [];
+                    const scoreIn = (dims?: { id: string; axes: { id: string; score: number }[] }[]) =>
+                      dims?.find(d => d.id === dimension.id)?.axes.find(a => a.id === axis.id)?.score;
+                    if (profile.organisationType === 'profit') {
+                      const lead = scoreIn(profile.profitData?.leadershipResponses);
+                      const staff = scoreIn(profile.profitData?.staffResponses);
+                      if (lead !== undefined && staff !== undefined) {
+                        breakdown.push({ label: 'Leiding', score: lead }, { label: 'Personeel', score: staff });
+                      }
+                    } else if (profile.culturalData) {
+                      for (const role of CULTURAL_ROLES) {
+                        const score = scoreIn(profile.culturalData.roleAverages[role.value]);
+                        if (score !== undefined) breakdown.push({ label: role.label, score });
+                      }
+                    }
 
                     return (
                       <div key={axis.id} className="border-l-4 border-slate-200 pl-4 py-2">
@@ -396,27 +413,19 @@ export function ProfileOutput({ profile }: ProfileOutputProps) {
                           </span>
                         </div>
 
-                        {/* Show breakdown for profit profiles */}
-                        {profile.organisationType === 'profit' && leaderAxis && staffAxis && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                            <div className="bg-blue-50 p-2 rounded border border-blue-200">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-blue-700 flex items-center gap-1">
-                                  <UserCog className="w-3 h-3" />
-                                  Leiding
-                                </span>
-                                <span className="text-sm font-bold text-blue-600">{leaderAxis.score}</span>
+                        {breakdown.length >= 2 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                            {breakdown.map((item) => (
+                              <div key={item.label} className="bg-slate-50 p-2 rounded border border-slate-200">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-slate-600 flex items-center gap-1">
+                                    <Users className="w-3 h-3" />
+                                    {item.label}
+                                  </span>
+                                  <span className="text-sm font-bold text-slate-700">{item.score}</span>
+                                </div>
                               </div>
-                            </div>
-                            <div className="bg-indigo-50 p-2 rounded border border-indigo-200">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-indigo-700 flex items-center gap-1">
-                                  <Users className="w-3 h-3" />
-                                  Personeel
-                                </span>
-                                <span className="text-sm font-bold text-indigo-600">{staffAxis.score}</span>
-                              </div>
-                            </div>
+                            ))}
                           </div>
                         )}
 

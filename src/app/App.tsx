@@ -7,7 +7,8 @@ import { ExportButton } from './components/ExportButton';
 // PasswordProtection & MatchingView bewust behouden voor eventuele re-activatie.
 // import { PasswordProtection } from './components/PasswordProtection';
 import { CSROIDashboard } from './components/CSROIDashboard';
-import { OrganisationProfile } from './data/types';
+import { OrganisationProfile, IndividualResponse, CulturalProfileData } from './data/types';
+import { CULTURAL_ROLES, PROFIT_ROLES } from './data/respondentRoles';
 import { migrateAllProfiles } from './utils/migrateProfiles';
 import {
   isConfigured,
@@ -38,6 +39,7 @@ export interface Dimension {
 }
 
 export interface ProfitProfileData {
+  individualResponses: IndividualResponse[];
   leadershipResponses: Dimension[];
   staffResponses: Dimension[];
   combinedDimensions: Dimension[];
@@ -58,6 +60,7 @@ export interface Profile {
     visualKeywords: string[];
   };
   profitData?: ProfitProfileData;
+  culturalData?: CulturalProfileData;
   createdAt: string;
   updatedAt: string;
 }
@@ -489,36 +492,47 @@ export default function App() {
                 </TabsContent>
 
                 <TabsContent value="responses">
-                  {currentProfile.organisationType === 'profit' && currentProfile.profitData ? (
-                    <div className="space-y-6">
-                      <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
-                        <h3 className="text-xl font-bold text-blue-900 mb-2">Bedrijfsprofiel Weging</h3>
-                        <p className="text-blue-800">
-                          Dit profiel combineert antwoorden van bedrijfsleiding (60%) en personeel (40%)
-                        </p>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-lg p-6 shadow-lg border border-slate-200">
-                          <h4 className="font-bold text-lg text-slate-900 mb-4">Antwoorden directie</h4>
-                          <p className="text-slate-600">60% weging in gecombineerd profiel</p>
+                  {(() => {
+                    // Aantal invullers per rol. Namen en de (interne) weging per rol
+                    // tonen we hier bewust niet.
+                    const responses =
+                      currentProfile.profitData?.individualResponses ??
+                      currentProfile.culturalData?.individualResponses ??
+                      [];
+                    const roles = currentProfile.organisationType === 'cultural' ? CULTURAL_ROLES : PROFIT_ROLES;
+                    if (responses.length === 0) {
+                      return (
+                        <div className="bg-slate-50 rounded-lg p-8 text-center border border-slate-200">
+                          <UsersIcon className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                          <h3 className="text-xl font-bold text-slate-900 mb-2">Geen individuele antwoorden</h3>
+                          <p className="text-slate-600">
+                            Voor dit profiel zijn geen individuele antwoorden bewaard.
+                          </p>
                         </div>
-
-                        <div className="bg-white rounded-lg p-6 shadow-lg border border-slate-200">
-                          <h4 className="font-bold text-lg text-slate-900 mb-4">Antwoorden medewerkers</h4>
-                          <p className="text-slate-600">40% weging in gecombineerd profiel</p>
+                      );
+                    }
+                    return (
+                      <div className="space-y-6">
+                        <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
+                          <h3 className="text-xl font-bold text-blue-900 mb-2">Gecombineerd profiel</h3>
+                          <p className="text-blue-800">
+                            Dit profiel combineert de antwoorden van{' '}
+                            {responses.length === 1 ? '1 invuller' : `${responses.length} invullers`}.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {roles.map((role) => (
+                            <div key={role.value} className="bg-white rounded-lg p-6 shadow-lg border border-slate-200">
+                              <div className="text-3xl font-bold text-slate-900">
+                                {responses.filter((r) => r.respondentRole === role.value).length}
+                              </div>
+                              <div className="text-slate-600">{role.label}</div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 rounded-lg p-8 text-center border border-slate-200">
-                      <UsersIcon className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                      <h3 className="text-xl font-bold text-slate-900 mb-2">Geen Response Data</h3>
-                      <p className="text-slate-600">
-                        Deze functionaliteit is alleen beschikbaar voor profit organisaties met employee responses.
-                      </p>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </TabsContent>
               </Tabs>
             )}

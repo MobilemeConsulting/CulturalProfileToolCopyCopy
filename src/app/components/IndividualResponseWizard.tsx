@@ -5,12 +5,16 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { QuestionnaireStep } from './QuestionnaireStep';
-import { User, Briefcase, Users } from 'lucide-react';
-import { Dimension, IndividualResponse } from '../data/types';
+import { User, Users } from 'lucide-react';
+import { Dimension, IndividualResponse, RespondentRole } from '../data/types';
+import { PROFIT_ROLES, RoleOption, roleLabel } from '../data/respondentRoles';
 
 interface IndividualResponseWizardProps {
   organisationName: string;
   dimensions: Dimension[];
+  // Keuzerollen voor de invuller (standaard: bedrijfsrollen).
+  roles?: RoleOption[];
+  defaultRole?: RespondentRole;
   onComplete: (response: IndividualResponse) => void;
   onCancel: () => void;
 }
@@ -18,6 +22,8 @@ interface IndividualResponseWizardProps {
 export function IndividualResponseWizard({
   organisationName,
   dimensions,
+  roles = PROFIT_ROLES,
+  defaultRole,
   onComplete,
   onCancel,
 }: IndividualResponseWizardProps) {
@@ -31,7 +37,9 @@ export function IndividualResponseWizard({
   }, [step]);
   const [respondentName, setRespondentName] = useState('');
   const [nameError, setNameError] = useState('');
-  const [respondentRole, setRespondentRole] = useState<'leadership' | 'staff'>('staff');
+  const [respondentRole, setRespondentRole] = useState<RespondentRole>(
+    defaultRole ?? roles[roles.length - 1].value
+  );
   const [currentDimensions, setCurrentDimensions] = useState<Dimension[]>(
     JSON.parse(JSON.stringify(dimensions)) // Deep copy
   );
@@ -91,48 +99,31 @@ export function IndividualResponseWizard({
             <Label>Je functie binnen de organisatie *</Label>
             <RadioGroup
               value={respondentRole}
-              onValueChange={(value) => setRespondentRole(value as 'leadership' | 'staff')}
+              onValueChange={(value) => setRespondentRole(value as RespondentRole)}
             >
-              <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                <RadioGroupItem value="leadership" id="role-leadership" />
-                <Label
-                  htmlFor="role-leadership"
-                  className="flex items-center gap-2 cursor-pointer flex-1"
-                >
-                  <Briefcase className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <div className="font-medium">Directie / Management</div>
-                    <div className="text-sm text-gray-500">
-                      Leidinggevende functie (CEO, directeur, manager, etc.)
+              {roles.map((role) => (
+                <div key={role.value} className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <RadioGroupItem value={role.value} id={`role-${role.value}`} />
+                  <Label
+                    htmlFor={`role-${role.value}`}
+                    className="flex items-center gap-2 cursor-pointer flex-1"
+                  >
+                    <Users className="w-4 h-4 text-teal-600" />
+                    <div>
+                      <div className="font-medium">{role.label}</div>
+                      <div className="text-sm text-gray-500">{role.description}</div>
                     </div>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                <RadioGroupItem value="staff" id="role-staff" />
-                <Label
-                  htmlFor="role-staff"
-                  className="flex items-center gap-2 cursor-pointer flex-1"
-                >
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <div className="font-medium">Ander personeel</div>
-                    <div className="text-sm text-gray-500">
-                      Medewerker, specialist, coordinator, etc.
-                    </div>
-                  </div>
-                </Label>
-              </div>
+                  </Label>
+                </div>
+              ))}
             </RadioGroup>
           </div>
 
-          {/* Uitleg */}
+          {/* Uitleg — de weging per rol blijft bewust intern (besluit AHHA). */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>Let op:</strong> Je individuele antwoorden worden samengevoegd met andere
-              respondenten om het uiteindelijke organisatieprofiel te maken. Directie antwoorden
-              wegen voor 60%, ander personeel voor 40%.
+              <strong>Let op:</strong> je antwoorden worden samengevoegd met die van de andere
+              invullers tot één profiel van de organisatie.
             </p>
           </div>
 
@@ -162,17 +153,8 @@ export function IndividualResponseWizard({
               <div className="font-medium">{respondentName}</div>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-sm">
-              {respondentRole === 'leadership' ? (
-                <>
-                  <Briefcase className="w-4 h-4 text-purple-600" />
-                  <span>Directie</span>
-                </>
-              ) : (
-                <>
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <span>Personeel</span>
-                </>
-              )}
+              <Users className="w-4 h-4 text-teal-600" />
+              <span>{roleLabel(roles, respondentRole)}</span>
             </div>
           </div>
         </CardContent>

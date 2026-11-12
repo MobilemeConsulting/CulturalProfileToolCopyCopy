@@ -179,10 +179,9 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-medium text-blue-900 mb-2">Volgende stap</h4>
                 <p className="text-sm text-blue-800">
-                  Na het invullen van deze informatie kun je meerdere personen de vragenlijst
-                  laten invullen. Elke persoon vult zijn/haar naam in en geeft aan of ze tot de
-                  directie of ander personeel behoren. Het eindresultaat is een gewogen gemiddelde
-                  (directie 60%, personeel 40%).
+                  Daarna kunnen meerdere personen de vragenlijst invullen. Elke invuller geeft
+                  een naam of alias op en kiest of hij of zij tot de directie of het andere
+                  personeel behoort. Alle antwoorden samen vormen het profiel van het bedrijf.
                 </p>
               </div>
 
@@ -220,7 +219,7 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
 
           <div className="mb-8">
             <h1 className="text-3xl font-normal text-gray-900 mb-2">
-              Responses verzamelen voor {orgName}
+              Antwoorden verzamelen voor {orgName}
             </h1>
             <p className="text-gray-600">
               Voeg personen toe die de vragenlijst invullen. Minimaal één persoon is vereist.
@@ -249,8 +248,8 @@ export const ProfitProfileFormNew: React.FC<ProfitProfileFormNewProps> = ({ onCo
                     <div>
                       <h3 className="font-medium text-gray-900">Profiel voltooien</h3>
                       <p className="text-sm text-gray-600">
-                        {individualResponses.length} response(s) verzameld. Klik op voltooien om
-                        het profiel op te slaan.
+                        {individualResponses.length === 1 ? '1 invuller' : `${individualResponses.length} invullers`}.
+                        Klik op voltooien om het profiel op te slaan.
                       </p>
                     </div>
                     <Button onClick={handleFinalize} size="lg" className="bg-teal-600 hover:bg-teal-700">

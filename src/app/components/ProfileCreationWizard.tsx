@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { OrganisationProfile, OrganisationType } from '../data/types';
-import { CulturalProfileForm } from './CulturalProfileForm';
+import { CulturalProfileFormNew } from './CulturalProfileFormNew';
 import { ProfitProfileFormNew } from './ProfitProfileFormNew';
 import { Building2, Palette, Download, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -155,7 +155,7 @@ export const ProfileCreationWizard: React.FC<ProfileCreationWizardProps> = ({
   return (
     <div>
       {selectedType === 'cultural' && (
-        <CulturalProfileForm onComplete={onProfileCreated} onBack={handleBack} />
+        <CulturalProfileFormNew onComplete={onProfileCreated} onBack={handleBack} />
       )}
       {selectedType === 'profit' && (
         <ProfitProfileFormNew onComplete={onProfileCreated} onBack={handleBack} />

@@ -21,11 +21,22 @@ export interface Dimension {
   axes: Axis[];
 }
 
+// Rol van een invuller. Bedrijven: leadership (directie) of staff (ander personeel).
+// Culturele organisaties: directie, bestuur, medewerker of vrijwilliger.
+// Labels en de (interne) weging staan in data/respondentRoles.ts.
+export type RespondentRole =
+  | 'leadership'
+  | 'staff'
+  | 'directie'
+  | 'bestuur'
+  | 'medewerker'
+  | 'vrijwilliger';
+
 // Individuele response van één persoon
 export interface IndividualResponse {
   id: string;
-  respondentName: string;
-  respondentRole: 'leadership' | 'staff'; // directie of ander personeel
+  respondentName: string; // naam of alias
+  respondentRole: RespondentRole;
   dimensions: Dimension[];
   completedAt: string;
 }
@@ -37,6 +48,13 @@ export interface ProfitProfileData {
   leadershipResponses: Dimension[]; // Gemiddelde van alle directie responses
   staffResponses: Dimension[]; // Gemiddelde van alle personeel responses
   combinedDimensions: Dimension[]; // Gewogen gemiddelde (60% leadership, 40% staff)
+}
+
+export interface CulturalProfileData {
+  // Individuele responses van alle invullers
+  individualResponses: IndividualResponse[];
+  // Gemiddelde per rol, enkel voor rollen met minstens één invuller
+  roleAverages: Partial<Record<RespondentRole, Dimension[]>>;
 }
 
 export type OrganisationType = 'cultural' | 'profit';
@@ -57,6 +75,7 @@ export interface OrganisationProfile {
     visualKeywords: string[];
   };
   profitData?: ProfitProfileData;
+  culturalData?: CulturalProfileData;
   createdAt: string;
   updatedAt: string;
 }

@@ -123,6 +123,13 @@ VITE_MATCHING_PASSWORD=...   # optioneel; enkel nodig als de (verwijderde) Match
 ```
 `PasswordProtection.tsx` leest het Matching-wachtwoord uit `VITE_MATCHING_PASSWORD` (niet langer hardcoded, want de repo is public).
 
+## Meerdere invullers (cultuur én bedrijf)
+- Beide flows werken met meerdere invullers: organisatiegegevens → invullers verzamelen (`ResponsesOverview`) → per invuller `IndividualResponseWizard` (naam of alias + rol + `QuestionnaireStep`).
+- Cultuur: `CulturalProfileFormNew.tsx` met vragen uit `data/culturalDimensions.ts`. Rollen directie / bestuur / medewerker / vrijwilliger, weging **40/30/20/10** in `data/respondentRoles.ts` (`CULTURAL_ROLE_WEIGHTS`). Eerst gemiddelde per rol, dan gewogen over de aanwezige rollen (gewichten herschaald) via `combineByRoleWeights` in `calculateAverages.ts`. Resultaat in `profile.culturalData` (`individualResponses`, `roleAverages`).
+- Bedrijf: `ProfitProfileFormNew.tsx`, rollen leadership/staff, weging 60/40 (`recalculateProfitData`).
+- **De weging wordt nergens in de tool getoond** (besluit AHHA, 12-11-2026). Het profiel toont wel het aantal invullers en de score per rol, zonder percentages.
+- Let op: `individualResponses` (met naam of alias) zit in het publiek leesbare profiel-JSON.
+
 ## Bekende design-keuzes
 - **Slider-scores + touched-tracking** (bijgewerkt na AHHA-review): de schuifjes staan visueel nog op 50 (een schuifje moet ergens staan), maar `CulturalProfileForm.tsx` houdt via een `touched`-state bij welke schuifjes de gebruiker écht bewoog. Een onaangeroerd schuifje telt **niet** als beantwoord: `handleNext` (per stap) en `handleSubmit` eisen dat elk schuifje bewogen is, en onaangeroerde schuifjes tonen een "nog niet beantwoord"-hint. Vervang `scores[id] === undefined` dus niet terug — de validatie loopt nu op `touched`. Dezelfde regel geldt in de profit-vragenlijst (`QuestionnaireStep.tsx`).
 - **Poolwoorden**: elke as heeft expliciete `left`/`right` (type `Axis`; cultureel inline in `CulturalProfileForm.tsx`, profit in `profitDimensions.ts`). **Links = lage score (0), rechts = hoge score (100)** — die richting moet overeenkomen met wat de analyse (`csroiCalculations.ts`, `craftCalculations.ts`, matching) onder een hoge score verstaat. Geen ruwe score (`X/100`) en geen "Gemiddeld" in het midden.

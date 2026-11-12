@@ -1,4 +1,4 @@
-import { Dimension, IndividualResponse } from '../data/types';
+import { Dimension, IndividualResponse, RespondentRole } from '../data/types';
 
 /**
  * Berekent het gemiddelde van meerdere responses
@@ -94,4 +94,50 @@ export function recalculateProfitData(individualResponses: IndividualResponse[])
     staffResponses,
     combinedDimensions,
   };
+}
+
+/**
+ * Combineert responses met een weging per rol: eerst het gemiddelde per rol,
+ * daarna een gewogen gemiddelde over de rollen die minstens één invuller hebben.
+ * Ontbrekende rollen vallen weg; de overige gewichten worden herschaald zodat
+ * ze samen 1 zijn. Rollen zonder gewicht tellen niet mee.
+ */
+export function combineByRoleWeights(
+  responses: IndividualResponse[],
+  weights: Partial<Record<RespondentRole, number>>
+): {
+  roleAverages: Partial<Record<RespondentRole, Dimension[]>>;
+  combinedDimensions: Dimension[];
+} {
+  const roleAverages: Partial<Record<RespondentRole, Dimension[]>> = {};
+  for (const role of Object.keys(weights) as RespondentRole[]) {
+    const roleResponses = responses.filter(r => r.respondentRole === role);
+    if (roleResponses.length > 0) {
+      roleAverages[role] = calculateAverageDimensions(roleResponses);
+    }
+  }
+
+  const present = (Object.keys(roleAverages) as RespondentRole[]).filter(
+    role => (weights[role] ?? 0) > 0
+  );
+  if (present.length === 0) return { roleAverages, combinedDimensions: [] };
+
+  const totalWeight = present.reduce((sum, role) => sum + (weights[role] ?? 0), 0);
+  const template = roleAverages[present[0]]!;
+
+  const combinedDimensions = template.map(dim => ({
+    ...dim,
+    axes: dim.axes.map(axis => {
+      const weighted = present.reduce((sum, role) => {
+        const roleAxis = roleAverages[role]!
+          .find(d => d.id === dim.id)
+          ?.axes.find(a => a.id === axis.id);
+        return sum + (roleAxis?.score ?? 0) * (weights[role] ?? 0);
+      }, 0);
+      // De toelichting van één rol is geen samenvatting van de groep.
+      return { ...axis, score: Math.round(weighted / totalWeight), description: '' };
+    }),
+  }));
+
+  return { roleAverages, combinedDimensions };
 }
